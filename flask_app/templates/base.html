@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>米游社兑换小助手</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
+</head>
+
+<body>
+    
+    <div class="sidebar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('index') }}">主页</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('start_task') }}">开始运行</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('get_user_info') }}">获取个人信息</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('product_list_view') }}">获取商品列表</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('create_task') }}">新建任务</a>
+            </li>
+        </ul>
+    </div>
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

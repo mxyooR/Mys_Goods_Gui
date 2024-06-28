@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>获取商品列表</h2>
+<form id="categoryForm" method="POST">
+    <div class="form-group">
+        <label for="categorySelect">选择游戏类别</label>
+        <select class="form-control" id="categorySelect" name="category">
+            <option value="bh3">崩坏3</option>
+            <option value="hk4e">原神</option>
+            <option value="hkrpg">崩坏：星穹铁道</option>
+            <option value="bh2">崩坏学园2</option>
+            <option value="nxx">未定事件簿</option>
+            <option value="bbs">米游社</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">确定</button>
+    <button type="button" class="btn btn-danger" id="clear-wishlist">删除备选清单</button>
+</form>
+
+{% if products %}
+    <h3 class="mt-4">商品信息</h3>
+    <ul class="list-group">
+        {% for product in products %}
+        <li class="list-group-item">
+            <div class="row">
+                <div class="col-sm-6">
+                    <strong>商品名称:</strong> {{ product.name }}<br>
+                    <strong>商品id:</strong> {{ product.id }}<br>
+                    <strong>兑换时间:</strong> {{ product.time }}<br>
+                    <strong>商品价格:</strong> {{ product.price }}
+                </div>
+                <div class="col-sm-6 text-right">
+                    <form class="wishlist-form">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input type="hidden" name="product_time" value="{{ product.time }}">
+                        <input type="hidden" name="product_name" value="{{ product.name }}">
+                        <input type="hidden" name="product_biz" class="product-biz" value="{{ game_biz }}">
+                        <button type="button" class="btn btn-success btn-sm add-to-wishlist">加入备选清单</button>
+                    </form>
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+
+$(document).ready(function() {
+    // 使用Ajax处理表单提交，防止页面刷新
+    $('#categoryForm').on('submit', function(event) {
+
+        var formData = $(this).serialize(); // 序列化表单数据
+        var selectedCategory = $('#categorySelect').val(); // 获取当前选中的分类ID
+        $.ajax({
+            type: 'POST',
+            url: '{{ url_for("product_list_view") }}', // 注意这里的URL应指向处理POST请求的视图函数
+            data: formData,
+            success: function(response) {
+                // 这里可以处理成功返回的数据，比如动态更新页面上的商品列表
+                // $('#your_product_list_container').html(response);
+                console.log('商品列表获取成功');
+                
+                // 重新设置选择框的选中状态
+                $('#categorySelect').val(selectedCategory); // 保持选择框的选中状态不变
+
+                // 其他操作...
+            },
+            error: function() {
+                alert('获取商品列表失败');
+            }
+        });
+    });
+    $('#categorySelect').val(selectedCategory);
+});
+
+
+
+ // 处理删除备选清单按钮的点击事件
+ $('#clear-wishlist').on('click', function() {
+        $.ajax({
+            type: 'POST',
+            url: '{{ url_for("clear_wishlist") }}',
+            success: function(response) {
+                alert('备选清单已清空');
+            },
+            error: function() {
+                alert('清空备选清单失败');
+            }
+        });
+    });
+
+
+
+    
+$(document).ready(function() {
+    $('#categorySelect').on('change', function() {
+        var selectedCategory = $(this).val();
+        $('.product-biz').val(selectedCategory);
+    });
+
+    $('.add-to-wishlist').on('click', function() {
+        var $form = $(this).closest('form');
+        $.ajax({
+            type: 'POST',
+            url: '{{ url_for("add_to_wishlist") }}',
+            data: $form.serialize(),
+            success: function(response) {
+                alert(response.message);
+            },
+            error: function() {
+                alert('Failed to add to wishlist');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

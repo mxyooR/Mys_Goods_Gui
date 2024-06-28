@@ -1,0 +1,105 @@
+<!-- create_task.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2>新建任务</h2>
+<form method="POST" action="/create_task">
+    <div class="form-group">
+        <label for="tasktName">任务名称</label>
+        <input type="text" class="form-control" id="taskName" name="taskName" value="默认任务1">
+        </input>
+            
+
+    </div>
+    <div class="form-group">
+        <label for="address">地址</label>
+        <select class="form-control" id="address" name="address">
+            {% for address_info in addresses %}
+            <option value="{{ address_info.id }}">{{ address_info.addr_ext }}</option>
+            
+            {% endfor %}
+        </select>
+        
+    </div>
+    <div class="form-group">
+        <label for="productName">商品名称</label>
+        <select class="form-control" id="productName" name="productName">
+            {% for goods in goods_list %}
+            <option value="{{ goods.id }}" data-biz="{{ goods.biz }}" >{{ goods.name }}</option>
+            
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="taskTime">时间</label>
+        <input type="datetime-local" class="form-control" id="taskTime" name="taskTime" value="{{ default_time.replace(' ', 'T') }}">
+    </div>
+    
+</form>
+
+   
+<button class="btn btn-primary" onclick="tasklist()">新建任务</button>
+
+<script>
+// 页面加载时设置初始时间
+document.addEventListener('DOMContentLoaded', function() {
+    updateTaskTime();
+});
+
+// 当商品选择框改变时，更新时间输入框的值
+document.getElementById("productName").addEventListener("change", function() {
+    updateTaskTime();
+});
+
+
+function tasklist(){
+        const address = document.getElementById('address').value;
+        const goods_id = document.getElementById('productName').value;
+        const task_time = document.getElementById('taskTime').value;
+        const task_name = document.getElementById('taskName').value;
+        const biz = document.querySelector('#productName option:checked').getAttribute('data-biz');
+        console.log(goods_id);
+        console.log(address);
+        console.log(task_time);
+        console.log(task_name);
+        console.log(biz);
+        fetch('/add_to_tasklist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ address: address, goods_id: goods_id, task_time: task_time ,task_name: task_name,biz: biz})
+        })
+        alert('任务创建成功');
+}
+
+
+
+
+
+function updateTaskTime() {
+    var productId = document.getElementById("productName").value; // 获取选择的商品ID
+    var goodsList = {{ goods_list | tojson | safe }}; // 获取商品列表数据
+
+    // 找到对应商品的时间值
+    var selectedGoods = goodsList.find(function(goods) {
+        return goods.id == productId;
+    });
+
+    // 如果找到了匹配的商品，更新时间输入框的值
+    if (selectedGoods) {
+        document.getElementById("taskTime").value = selectedGoods.time.replace(' ', 'T');
+    }
+}
+
+    // 显示弹窗
+    const alertMessage = "{{ alert | safe }}";
+    if (alertMessage) {
+        alert(alertMessage);
+    }
+
+
+
+</script>
+
+{% endblock %}

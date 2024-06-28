@@ -1,0 +1,25 @@
+{
+  "name": "my-electron-app",
+  "version": "1.0.0",
+  "description": "A desktop application built with Electron and Flask.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-packager . MyElectronApp --platform=win32 --arch=x64 --out=dist --overwrite --icon=tray_icon.ico "
+  },
+  "build": {
+    "appId": "com.mihoyoautobuy.app",
+    "win": {
+      "icon": "/tray_icon.ico"
+    }
+  },
+  "author": "mxyooR",
+  "license": "GPL-3.0-only",
+  "devDependencies": {
+    "@electron/packager": "latest",
+    "electron": "latest"
+  },
+  "dependencies": {
+    "electron-packager": "^17.1.2"
+  }
+}

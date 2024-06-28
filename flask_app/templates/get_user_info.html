@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>获取个人信息</h2>
+<form id="qrLoginForm">
+    <h3>扫描二维码获取信息</h3>
+    <img src="{{ qr_image_url }}" alt="QR Code">
+    <input type="hidden" id="appId" value="{{ app_id }}">
+    <input type="hidden" id="ticket" value="{{ ticket }}">
+    <input type="hidden" id="device" value="{{ device }}">
+    <button type="button" class="btn btn-primary" onclick="checkQRLogin()">获取信息</button>
+</form>
+
+<script>
+    function checkQRLogin() {
+        const appId = document.getElementById('appId').value;
+        const ticket = document.getElementById('ticket').value;
+        const device = document.getElementById('device').value;
+
+        fetch('/check_qr_login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ app_id: appId, ticket: ticket, device: device })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('登录成功！');
+            } else {
+                alert('登录失败，请重试。');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    
+    // 显示弹窗
+    const alertMessage = "{{ alert | safe }}";
+    if (alertMessage) {
+        alert(alertMessage);
+    }
+</script>
+{% endblock %}

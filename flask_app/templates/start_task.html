@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>开始任务</h2>
+
+<form method="POST" action="/run_task" id="start-task-form">
+    <label for="task-select">选择任务:</label>
+    <select id="task-select" name="task">
+        {% for task in tasks %}
+        <option value="{{ task.time }}">{{ task.name }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+    <table class="time-table">
+        <tr>
+            <td><label for="target-time">目标时间:</label></td>
+            <td><label for="current-time">当前时间:</label></td>
+        </tr>
+        <tr>
+            <td><span id="target-time"></span></td>
+            <td><span id="current-time">{{ current_time }}</span></td>
+        </tr>
+    </table>
+    <br>
+    <table class="remaining-time">
+        <tr>
+            <td><label for="remaining-time">剩余时间:</label></td>
+        </tr>
+        <tr>
+            <td><span id="remaining-time"></span></td>
+        </tr>
+    </table>
+
+    <br>
+    <button type="button" class="btn btn-primary" id="start-task-button">开始任务</button>
+</form>
+
+<div class="scroll-box" id="task-messages">
+    <h3>任务消息</h3>
+    <ul id="messages-list"></ul>
+</div>
+
+<script>
+    let currentTask = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTaskTime();
+        pollTaskMessages();
+    });
+
+    document.getElementById("task-select").addEventListener("change", function() {
+        updateTaskTime();
+        enableStartButton();
+    });
+
+    function updateTaskTime() {
+        var taskSelect = document.getElementById("task-select");
+        var taskTime = taskSelect.value;
+
+        // 替换 'T' 为 ' ' 并添加秒数
+        var formattedTaskTime = taskTime.replace('T', ' ') + ":00";
+
+        document.getElementById("target-time").innerText = formattedTaskTime;
+    }
+
+    // 每秒更新剩余时间
+    setInterval(function() {
+        var targetTimeString = document.getElementById("target-time").innerText;
+        var currentTimeString = document.getElementById("current-time").innerText;
+
+        var targetTime = new Date(targetTimeString);
+        var currentTime = new Date(currentTimeString);
+
+        var timeDifference = targetTime - currentTime;
+
+        if (timeDifference > 0) {
+            var remainingSeconds = Math.floor(timeDifference / 1000);
+
+            var days = Math.floor(remainingSeconds / (3600 * 24));
+            remainingSeconds %= (3600 * 24);
+            var hours = Math.floor(remainingSeconds / 3600);
+            remainingSeconds %= 3600;
+            var minutes = Math.floor(remainingSeconds / 60);
+            var seconds = remainingSeconds % 60;
+
+            var remainingTimeFormatted = days + "天 " + hours + "时 " + minutes + "分 " + seconds + "秒";
+
+            document.getElementById("remaining-time").innerText = remainingTimeFormatted;
+        } else {
+            document.getElementById("remaining-time").innerText = "任务已过期";
+        }
+    }, 1000);
+
+    // 每秒更新当前时间
+    setInterval(() => {
+        fetch('/get_current_time')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('current-time').innerText = data.current_time;
+        });
+    }, 1000);
+
+    // 开始任务按钮点击事件
+    document.getElementById("start-task-button").addEventListener("click", function() {
+        var taskSelect = document.getElementById("task-select");
+        var selectedTask = taskSelect.value;
+        disableStartButton();
+        alert("任务开始: " + selectedTask);
+        fetch('/run_task', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'task': selectedTask
+            })
+        })
+        
+        
+        
+        
+        currentTask = selectedTask;
+           
+        
+    });
+
+    function disableStartButton() {
+        var startButton = document.getElementById("start-task-button");
+        startButton.disabled = true;
+        startButton.textContent = "任务进行中";
+    }
+
+    function enableStartButton() {
+        var startButton = document.getElementById("start-task-button");
+        startButton.disabled = false;
+        startButton.textContent = "开始任务";
+        currentTask = null;
+    }
+
+    // 轮询任务消息
+    function pollTaskMessages() {
+        setInterval(() => {
+            fetch('/get_task_messages')
+            .then(response => response.json())
+            .then(data => {
+                var messagesList = document.getElementById('messages-list');
+                var currentMessages = Array.from(messagesList.getElementsByTagName('li')).map(li => li.textContent);
+                data.messages.forEach(message => {
+                    if (!currentMessages.includes(message)) {
+                        var li = document.createElement('li');
+                        li.textContent = message;
+                        messagesList.appendChild(li);
+                    }
+                });
+            });
+        }, 1000); // 每秒轮询一次
+    }
+</script>
+{% endblock %}
