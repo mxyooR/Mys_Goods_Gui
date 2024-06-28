@@ -1,31 +1,33 @@
+
 # Mys Goods GUI
 
 一个基于Python、Flask和Electron的桌面应用，用于自动兑换米游社商品。
 
 ## 项目结构
 
+```
 │  main.js            electron主文件  
 │  package-lock.json
-│  package.json      打包成exe的配置文件
+│  package.json       打包成exe的配置文件
 │  preload.js
 │  README.md
-│  tray_icon.ico    图标
-│  tray_icon.png    图标
+│  tray_icon.ico      图标
+│  tray_icon.png      图标
 │
 └─flask_app
     │  app.py          flask主文件
     │  global_vars.py  全局变量
     │  goodslist.json  备选清单
-    │  log.log          日志
-    │  _init_.py
+    │  log.log         日志
+    │  __init__.py
     │
     ├─scripts
-    │  │  details.py  获取地址、商品信息
+    │  │  details.py   获取地址、商品信息
     │  │  exchange.py  兑换主代码
-    │  │  log.py        日志功能
-    │  │  login.py      登录功能
-    │  │  tools.py      写入和读取json
-    │  │  _init_.py
+    │  │  log.py       日志功能
+    │  │  login.py     登录功能
+    │  │  tools.py     写入和读取json
+    │  │  __init__.py
     │  │
     │  └─__pycache__
     │          details.cpython-311.pyc
@@ -45,9 +47,9 @@
             create_task.html      新建任务
             get_user_info.html    获取个人信息
             index.html            主界面
-            product_list.html      获取商品信息
+            product_list.html     获取商品信息
             start_task.html       开始任务
-
+```
 
 ## 安装与运行
 
@@ -69,7 +71,7 @@
 
     ```bash
     python -m venv venv
-    source venv/bin/activate  # 对于Windows用户，使用 `venv\Scripts\activate`
+    source venv/bin/activate  # 对于Windows用户，使用 `venv\Scriptsctivate`
     pip install -r requirements.txt
     ```
 
