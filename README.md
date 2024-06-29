@@ -102,7 +102,7 @@
 
 本项目参考了以下开源项目：
 
-- [mxyooR/Mys_Goods_Gui](https://github.com/mxyooR/Mys_Goods_Gui)
+- (https://github.com/Womsxd/mihoyo_login)
 - [Ljzd-PRO/nonebot-plugin-mystool](https://github.com/Ljzd-PRO/nonebot-plugin-mystool)
 
 ## 注意
