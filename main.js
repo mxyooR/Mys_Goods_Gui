@@ -78,6 +78,7 @@ app.on('window-all-closed', function () {
 });
 
 app.on('before-quit', () => {
+  exec(`taskkill /IM run.exe /F`)
   if (flaskProcess) {
     flaskProcess.kill();
   }
