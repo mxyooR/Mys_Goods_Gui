@@ -3,8 +3,6 @@ import json
 from typing import Optional, List, Dict
 import datetime
 
-#cookie="account_id=313226167; cookie_token=kTyVlnoBwAzCxhRtejVaUu5zj57dWoMnMMnuSCK9; login_ticket=ggMUgX8RIS4MWZJQEXG9mvTftzEH5dFjTAWfbwmI; ltoken=QG5tVMYHjCEkeYTDkGX5ZY0cDSW4nTgT5r9WzVMr; ltuid=313226167; aliyungf_tc=818018bba3eb2a6ffb1e01fc0315c5c20ce26efab72e25fe25525955341df0f2; _MHYUUID=1633526a-ccff-4159-b07d-4109651d5a5a"
-
 def getaddress(cookie):
     url = "https://api-takumi.mihoyogift.com/account/address/list"
     headers = {
