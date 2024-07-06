@@ -254,6 +254,7 @@ def create_task():
             # 处理其他未预期的错误
             log_message(f"Unexpected error when accessing address data: {e}")
             addresses = []
+        addresses.append({'id': '', 'addr_ext': '空地址，兑换游戏内商品选这个'})
         # 设置默认时间
         default_time = goods_list[0]['time'] if goods_list else ''
         # 渲染创建任务的页面
