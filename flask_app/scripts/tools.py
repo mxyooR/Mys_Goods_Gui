@@ -1,6 +1,6 @@
 import json
 import os
-import requests
+
 
 # 获取当前文件的绝对路径
 base_dir = os.path.abspath(os.path.dirname(__file__))
@@ -45,6 +45,9 @@ def format_cookie_string(cookie):
 
 
 def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie,time,name):
+    """
+    将任务添加到任务清单中
+    """
     if game_biz=="hk4e":
         region="cn_gf01"
     elif game_biz=="bh3":

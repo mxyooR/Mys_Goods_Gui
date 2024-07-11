@@ -1,9 +1,13 @@
 import requests
-import json
 from typing import Optional, List, Dict
 import datetime
 
+
+
 def getaddress(cookie):
+    """
+    获取地址
+    """
     url = "https://api-takumi.mihoyogift.com/account/address/list"
     headers = {
         "Host": "api-takumi.mihoyogift.com",
@@ -25,6 +29,8 @@ def getaddress(cookie):
     print(res.text)
     return res.json()
 
+
+#参考https://github.com/GOOD-AN/Mys-Exchange-Goods感谢开源
 
 def parse_goods_info(data: Dict) -> Dict:
     """

@@ -5,7 +5,6 @@ import json
 import os
 import global_vars
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from scripts.log import log_message, setup_logger
@@ -13,25 +12,13 @@ from scripts.log import log_message, setup_logger
 
 executor = ThreadPoolExecutor(max_workers=1)
 app = Flask(__name__)
-# 获取当前文件的绝对路径
+
 base_dir = os.path.abspath(os.path.dirname(__file__))
 parent_dir = os.path.dirname(base_dir)
-
 goodslist_path = os.path.join(base_dir, 'goodslist.json')
-
-# 动态构建 config.json 文件的绝对路径
 config_path = os.path.join(base_dir, 'config.json')
-
 tasklistpath = os.path.join(base_dir, 'tasklist.json')
-# 读取 config.json 文件
-def load_config():
-    try:
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            global_vars.cookie_str = config['cookie']
-        
-    except Exception as e:
-        print(f"None Cookie Exists: {e}")
+
 
 
 
@@ -39,14 +26,6 @@ def load_config():
 @app.route('/')
 def index():
     return render_template('index.html')
-
-
-
-
-
-
-
-
 
 
 #####################
@@ -58,10 +37,11 @@ async def start_task():
     try:
         with open(tasklistpath,'r', encoding='utf-8') as f:
             tasks = json.load(f)
+            log_message("successfully loaded tasklist.json")
     except Exception as e:
         log_message(f"Error loading tasklist.json: {e}")
         return redirect(url_for('create_task', alert="请先创建任务清单"))
-    log_message(tasks)
+
     return render_template('start_task.html', tasks=tasks, current_time=await exchange.get_ntp_time())
 
 
@@ -90,7 +70,7 @@ def run_task():
         tasks = json.load(f)
     selected_task_time = request.form.get('task')
     selected_task = next((task for task in tasks if task['time'] == selected_task_time), None)
-    
+    log_message(f"任务已经开始: {selected_task}")
     executor.submit(run_asyncio_task, selected_task)
     return "Task is running"
 
@@ -161,23 +141,13 @@ def check_qr_login():
         # 创建单独项的 cookie 列表
         cookies_list = [{key: value} for key, value in cookie.items()]
         global_vars.cookie_stored = cookies_list
-        
-
-         
-
 
          # Write the cookie to config.json
         config_data = {'cookie': cookie_str,"cookies_list": cookies_list, "device_id": global_vars.device_id}
-        log_message(f"config_data:{config_data}")
+        log_message("successfully write cookie to config.json")
         with open(config_path, 'w', encoding='utf-8') as f:
             
             json.dump(config_data, f)
-
-
-        # Check if device_id exists in config
-          
-        
-
 
         return jsonify({'status': 'success', 'cookie': cookie_str})
 
@@ -209,7 +179,7 @@ def add_to_wishlist():
 
     # 使用 tools.py 中的 add_to_wishlist 函数
     tools.add_to_wishlist(product_name,product_id, product_time,product_biz)
-    log_message(f"Product added to wishlist: {product_id}, {product_time}, {product_name}, {product_biz}")
+    log_message(f"Product added to wishlist:  {product_name}")
     return jsonify({'status': 'success', 'message': '已成功添加到备选清单'})
 
 
@@ -255,6 +225,8 @@ def create_task():
             log_message(f"Unexpected error when accessing address data: {e}")
             addresses = []
         addresses.append({'id': '', 'addr_ext': '空地址，兑换游戏内商品选这个'})
+
+        print(addresses)
         # 设置默认时间
         default_time = goods_list[0]['time'] if goods_list else ''
         # 渲染创建任务的页面
@@ -286,10 +258,6 @@ def add_to_tasklist():
                 if 'account_id' in cookie_dict:
                     uid = cookie_dict['account_id']
                     break
-        
-
-
-
             cookie = global_vars.cookie_str
             device_id = global_vars.device_id
         except IndexError:
@@ -306,12 +274,12 @@ def add_to_tasklist():
     log_message("成功加入任务清单")
 
     if not goods_id or not address_id or not time or not name or not game_biz:
-        log_message(f"Missing required parameters: goods_id: {goods_id}, address_id: {address_id}, time: {time}, name: {name}, game_biz: {game_biz}")
+        log_message("Missing required parameters")
         return jsonify({'status': 'error', 'message': '请求数据缺失'}), 400
 
     try:
         tools.add_to_tasklist(goods_id, uid, game_biz, address_id, device_id, cookie, time, name)
-        log_message(f"Task added successfully: {goods_id}, {uid}, {game_biz}, {address_id}, {device_id}, {cookie}, {time}, {name}")
+        log_message(f"Task added successfully: {name}")
         return jsonify({'status': 'success', 'message': '已成功添加到任务清单'})
     except Exception as e:
         log_message(f"Error adding task: {e}")
@@ -331,20 +299,18 @@ def clear_wishlist():
 
 
 
+#####################
+#入口
+#####################
 
-
-
-
-
-###########################
-#测试用
-###########################
 def load_config():
+    """
+    从 config.json 文件中加载 cookie 和 device
+    """
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
             global_vars.cookie_str = config['cookie']
-            log_message(f"cookie_str:{global_vars.cookie_str}")
             global_vars.device_id = config['device_id']
             log_message("succesfully loaded config.json")
         
@@ -352,7 +318,13 @@ def load_config():
         print(f"None Cookie Exists: {e}")
 
 if __name__ == '__main__':
-    setup_logger()  # Ensure logger is set up at the start
+    setup_logger() 
+    # 检查 goodslist.json 是否存在，不存在则创建  不然会报错
+    if not os.path.exists(goodslist_path):
+        with open(goodslist_path, 'w') as f:
+            json.dump([], f)  
+        log_message(f"goodlist不存在，已创建文件：{goodslist_path}")
+
     log_message("Test log message")
     load_config()
     app.run(debug=True)

@@ -5,15 +5,15 @@ import random
 import requests
 from string import ascii_letters, digits
 from qrcode.main import QRCode
-from qrcode.image.styledpil import StyledPilImage
 from typing import Tuple, TypedDict, Literal
-from io import StringIO
 import logging
 import uuid
 import hashlib
 from copy import deepcopy
 import os
 import global_vars
+
+#参考https://github.com/Womsxd/mihoyo_login项目 感谢开源
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 parent_dir = os.path.dirname(base_dir)
@@ -24,7 +24,6 @@ cookie = {
     'login_ticket': '',
     'ltoken': '',
     'ltuid': '',
-    'MHYUUID': '',
     'stoken': '',
     "game_token": '',
     "ltuid": '',
@@ -339,6 +338,9 @@ def get_ltoken_by_stoken(cookies, device_id: str = None) :
 
 
 def ReturnTotalCookie(uid, game_token,ticket):
+    """
+    返回总的cookie 这个好像只要cookietoken就有效了
+    """
     try:
         # Set initial cookie values
         global_vars.device_id=device_id

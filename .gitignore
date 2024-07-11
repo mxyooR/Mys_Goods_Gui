@@ -1,0 +1,39 @@
+
+
+
+#隐私文件
+*.log
+goodslist.json
+config.json
+tasklist.json
+
+
+# IDE和编辑器相关文件
+.vscode/
+.idea/
+*.sublime-project
+*.code-workspace
+
+# 编译输出文件
+build/
+dist/
+out/
+
+# 依赖库
+node_modules/
+vendor/
+# Python相关文件
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+.eggs/
+*.pyo
+*.pyd
+
+# 虚拟环境
+venv/
+ENV/
+.env
+.envrc
