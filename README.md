@@ -3,6 +3,33 @@
 
 一个基于Python、Flask和Electron的桌面应用，用于自动兑换米游社商品。
 
+## 写在前面
+
+感谢你使用Mys Goods GUI。本项目旨在帮助用户自动兑换米游社商品，提高兑换效率。由于本人能力有限，项目可能仍然存在一些bug，欢迎提交issue，也请勿将本项目用于非法用途。希望这个项目对你有所帮助，并且欢迎提出改进建议。
+
+## Todolist
+
+### 功能开发
+
+- [ ] 登录功能优化
+- [ ] 任务管理界面美化
+- [ ] 增加多语言支持
+- [ ] 提供详细的使用文档
+- [ ] 优化日志功能
+- [ ] 提供更多兑换选项
+
+### Bug修复
+
+- [ ] 修复偶发的登录失败问题
+- [ ] 解决部分商品兑换不成功的问题
+- [ ] 修正日志记录时间格式
+
+### 性能优化
+
+- [ ] 提高应用响应速度
+- [ ] 减少内存占用
+- [ ] 优化前后端数据传输效率
+
 ## 项目结构
 
 ```
@@ -71,7 +98,7 @@
 
     ```bash
     python -m venv venv
-    source venv/bin/activate  # 对于Windows用户，使用 `venv\Scriptsctivate`
+    source venv/bin/activate  # 对于Windows用户，使用 `venv\Scripts\activate`
     pip install -r requirements.txt
     ```
 
@@ -102,9 +129,11 @@
 
 本项目参考了以下开源项目：
 
-- (https://github.com/Womsxd/mihoyo_login)
-- [Ljzd-PRO/nonebot-plugin-mystool](https://github.com/Ljzd-PRO/nonebot-plugin-mystool)
+- https://github.com/Womsxd/mihoyo_login
+- https://github.com/Ljzd-PRO/nonebot-plugin-mystool
+- https://github.com/GOOD-AN/Mys-Exchange-Goods
 
 ## 注意
 
-由于本人能力有限，项目可能仍然存在很多bug，欢迎提交issue 仅供学习使用，请勿用于非法用途
+仅供学习使用，请勿用于非法用途。
+
