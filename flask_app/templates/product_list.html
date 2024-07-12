@@ -2,6 +2,7 @@
 
 {% block content %}
 <h2>获取商品列表</h2>
+
 <form id="categoryForm" method="POST">
     <div class="form-group">
         <label for="categorySelect">选择游戏类别</label>
@@ -19,26 +20,43 @@
     <button type="button" class="btn btn-danger" id="clear-wishlist">删除备选清单</button>
 </form>
 
+<h3 class="golds">目前拥有米游币数：{{ golds }}</h3>
 {% if products %}
     <h3 class="mt-4">商品信息</h3>
     <ul class="list-group">
         {% for product in products %}
         <li class="list-group-item">
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-6" style="color: black;">
                     <strong>商品名称:</strong> {{ product.name }}<br>
                     <strong>商品id:</strong> {{ product.id }}<br>
                     <strong>兑换时间:</strong> {{ product.time }}<br>
                     <strong>商品价格:</strong> {{ product.price }}
                 </div>
                 <div class="col-sm-6 text-right">
-                    <form class="wishlist-form">
-                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                        <input type="hidden" name="product_time" value="{{ product.time }}">
-                        <input type="hidden" name="product_name" value="{{ product.name }}">
-                        <input type="hidden" name="product_biz" class="product-biz" value="{{ game_biz }}">
-                        <button type="button" class="btn btn-success btn-sm add-to-wishlist">加入备选清单</button>
-                    </form>
+                    <table>
+                        <tr>
+                            
+                                <td>
+                                    <img src="{{ product.icon }}" alt="商品图标" class="product-icon" ><br>
+                                </td>
+                                
+                                <td>
+                                    <form class="wishlist-form">
+                                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                                    <input type="hidden" name="product_time" value="{{ product.time }}">
+                                    <input type="hidden" name="product_name" value="{{ product.name }}">
+                                    <input type="hidden" name="product_biz" class="product-biz" value="{{ game_biz }}">
+                                    {% if golds >= product.price %}
+                                        <button type="button" class="btn btn-success btn-sm add-to-wishlist">加入备选清单</button>
+                                    {% else %}
+                                        <button type="button" class="button-locked" disabled>金币不足</button>
+                                    {% endif %}
+                                    </form>
+                                </td>
+                            
+                        </tr>
+                    </table>
                 </div>
             </div>
         </li>
@@ -78,25 +96,20 @@ $(document).ready(function() {
     $('#categorySelect').val(selectedCategory);
 });
 
-
-
- // 处理删除备选清单按钮的点击事件
- $('#clear-wishlist').on('click', function() {
-        $.ajax({
-            type: 'POST',
-            url: '{{ url_for("clear_wishlist") }}',
-            success: function(response) {
-                alert('备选清单已清空');
-            },
-            error: function() {
-                alert('清空备选清单失败');
-            }
-        });
+// 处理删除备选清单按钮的点击事件
+$('#clear-wishlist').on('click', function() {
+    $.ajax({
+        type: 'POST',
+        url: '{{ url_for("clear_wishlist") }}',
+        success: function(response) {
+            alert('备选清单已清空');
+        },
+        error: function() {
+            alert('清空备选清单失败');
+        }
     });
+});
 
-
-
-    
 $(document).ready(function() {
     $('#categorySelect').on('change', function() {
         var selectedCategory = $(this).val();

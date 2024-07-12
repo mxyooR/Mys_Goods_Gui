@@ -1,6 +1,7 @@
 import requests
 from typing import Optional, List, Dict
 import datetime
+from .log import log_message
 
 
 
@@ -30,7 +31,7 @@ def getaddress(cookie):
     return res.json()
 
 
-#参考https://github.com/GOOD-AN/Mys-Exchange-Goods感谢开源
+#参考https://github.com/GOOD-AN/Mys-Exchange-Goods 感谢开源
 
 def parse_goods_info(data: Dict) -> Dict:
     """
@@ -85,6 +86,7 @@ def parse_goods_info(goods):
         "name": goods.get("goods_name"),
         "price": goods.get("price"),
         "time": timestamp_to_date(goods.get("next_time")),
+        "icon": goods.get("icon"),
     }
 
 def get_goods_list(game_type: str, cookie: str = ''):
@@ -110,6 +112,7 @@ def get_goods_list(game_type: str, cookie: str = ''):
             res = requests.get(goods_list_url, params=goods_list_params, headers=goods_list_headers)
             res.raise_for_status()  # 检查HTTP请求状态
             goods_list_data = res.json()['data']
+            #print(goods_list_data)
 
             goods_list += list(map(parse_goods_info, goods_list_data['list']))
             # 判断是否需要获取下一页数据
@@ -121,7 +124,30 @@ def get_goods_list(game_type: str, cookie: str = ''):
     except:
         return None
 
-
+def get_point(cookie):
+    """
+    获取米游币数量
+    需要stoken与stuid
+    """
+        
+    point_url = "https://bbs-api.mihoyo.com/apihub/sapi/getUserMissionsState"
+    point_headers = {
+        'Cookie': cookie,
+    }
+        
+    point_req = requests.get(point_url, headers=point_headers)
+        
+    if point_req.status_code != 200:
+        log_message(f"获取米游币数量失败, 返回状态码为{str(point_req.status_code)}")
+        return False
+        
+    point_req = point_req.json()
+        
+    if point_req['retcode'] != 0:
+        log_message(f"获取米游币数量失败, 原因为{point_req['message']}")
+        return False
+        
+    return point_req['data']['total_points']
 
 
 

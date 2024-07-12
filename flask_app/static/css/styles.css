@@ -113,6 +113,20 @@ button {
     border: none; /* 移除边框 */
 }
 
+
+.button-locked {
+    
+    background-color: #5d5d5d; /* 背景颜色 */
+    color: rgb(255, 255, 255); /* 字体颜色 */
+    font-weight: bold; /* 字体加粗 */
+    cursor: pointer; /* 鼠标样式 */
+    border: none; /* 移除边框 */
+}
+
+
+
+
+
 button:hover {
     background-color: #0056b3; /* 鼠标悬停背景颜色 */
 }
@@ -128,6 +142,20 @@ button:hover {
     flex: 0 0 auto; /* 不允许弹性增长或收缩 */
 }
 
+.product-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 35px
+    
+    /*左边的边距*/
+}
+
+.golds{
+    color: #2600ff;
+    /*居中*/
+    text-align: center;
+}
 
 .time-table {
     width: 100%;/* 宽度100% */

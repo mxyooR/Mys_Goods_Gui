@@ -164,11 +164,13 @@ def check_qr_login():
 @app.route('/product_list', methods=['GET', 'POST'])
 def product_list_view():
     products = []
+    golds=details.get_point(global_vars.cookie_str)
     if request.method == 'POST':
         selected_category = request.form.get('category')
         global_vars.game_biz = selected_category
         products = details.get_goods_list(selected_category, global_vars.cookie_str)
-    return render_template('product_list.html', products=products, game_biz=global_vars.game_biz)
+        
+    return render_template('product_list.html', products=products, game_biz=global_vars.game_biz,golds=golds)
 #添加到心愿单
 @app.route('/add_to_wishlist', methods=['POST'])
 def add_to_wishlist():
