@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu } = require('electron');
+const { app, BrowserWindow, Tray, Menu, dialog } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
 let mainWindow;
@@ -16,12 +16,23 @@ function createWindow() {
     },
   });
 
-
-
   mainWindow.loadURL('http://localhost:5000'); // 确保Flask应用程序在这个端口上运行
   mainWindow.on('close', (event) => {
     event.preventDefault(); // 拦截默认的关闭操作
-    mainWindow.hide(); // 隐藏窗口
+
+    const choice = dialog.showMessageBoxSync(mainWindow, {
+      type: 'question',
+      buttons: ['隐藏到托盘', '关闭程序'],
+      title: '确认',
+      message: '你想要关闭程序还是隐藏到托盘？',
+    });
+
+    if (choice === 0) { // 用户选择了“隐藏到托盘”
+      mainWindow.hide();
+    } else { // 用户选择了“关闭程序”
+      mainWindow.destroy();
+      app.quit();
+    }
   });
 
   mainWindow.on('closed', function () {
@@ -63,10 +74,6 @@ app.on('ready', () => {
     console.error(`stderr: ${stderr}`);
   });
 
-
-
-  
-
   createWindow();
   createTray();
 });
@@ -78,7 +85,7 @@ app.on('window-all-closed', function () {
 });
 
 app.on('before-quit', () => {
-  exec(`taskkill /IM run.exe /F`)
+  exec(`taskkill /IM run.exe /F`);
   if (flaskProcess) {
     flaskProcess.kill();
   }
