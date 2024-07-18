@@ -136,7 +136,11 @@ def get_qr_url() -> Tuple[str, str, str, str]:
     说明:
         获取二维码URL
     """
+<<<<<<< HEAD
     app_id = "8"
+=======
+    app_id = "8"   #暂时修复
+>>>>>>> c6026ec326aa32a321533f7563645887f5706eff
     device = "".join(random.choices((ascii_letters + digits), k=64))
     _json = {
         "app_id": app_id,
