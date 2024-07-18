@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+
 {% block content %}
 <h2>开始任务</h2>
 
@@ -32,20 +33,37 @@
     </table>
 
     <br>
-    <button type="button" class="btn btn-primary" id="start-task-button">开始任务</button>
+    <button type="button" class="btn btn-primary" id="start-task-button">
+        {% if task_running %}
+            停止任务
+        {% else %}
+            开始任务
+        {% endif %}
+    </button>
 </form>
+
+<div id="task-status" style="color: #ff0000; font-size: 16px;font-family:Arial, Helvetica, sans-serif;">
+    {% if task_running %}
+        <p><i class="fas fa-sync-alt fa-spin"></i> 任务正在进行中</p>
+    {% else %}
+        <p><i class="fas fa-times-circle"></i> 当前没有正在运行的任务</p>
+    {% endif %}
+</div>
+
 
 <div class="scroll-box" id="task-messages">
     <h3>任务消息</h3>
     <ul id="messages-list"></ul>
 </div>
 
+
 <script>
-    let currentTask = null;
+    let currentTask = {{ 'true' if task_running else 'false' }};
 
     document.addEventListener('DOMContentLoaded', function() {
         updateTaskTime();
         pollTaskMessages();
+        pollTaskStatus();
     });
 
     document.getElementById("task-select").addEventListener("change", function() {
@@ -57,13 +75,11 @@
         var taskSelect = document.getElementById("task-select");
         var taskTime = taskSelect.value;
 
-        // 替换 'T' 为 ' ' 并添加秒数
         var formattedTaskTime = taskTime.replace('T', ' ') + ":00";
 
         document.getElementById("target-time").innerText = formattedTaskTime;
     }
 
-    // 每秒更新剩余时间
     setInterval(function() {
         var targetTimeString = document.getElementById("target-time").innerText;
         var currentTimeString = document.getElementById("current-time").innerText;
@@ -76,68 +92,57 @@
         if (timeDifference > 0) {
             var remainingSeconds = Math.floor(timeDifference / 1000);
 
-            var days = Math.floor(remainingSeconds / (3600 * 24));
-            remainingSeconds %= (3600 * 24);
             var hours = Math.floor(remainingSeconds / 3600);
             remainingSeconds %= 3600;
             var minutes = Math.floor(remainingSeconds / 60);
             var seconds = remainingSeconds % 60;
 
-            var remainingTimeFormatted = days + "天 " + hours + "时 " + minutes + "分 " + seconds + "秒";
-
-            document.getElementById("remaining-time").innerText = remainingTimeFormatted;
+            document.getElementById("remaining-time").innerText =
+                hours + "小时 " + minutes + "分钟 " + seconds + "秒";
         } else {
-            document.getElementById("remaining-time").innerText = "任务已过期";
+            document.getElementById("remaining-time").innerText = "时间已到!";
         }
     }, 1000);
-
-    // 每秒更新当前时间
-    setInterval(() => {
-        fetch('/get_current_time')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('current-time').innerText = data.current_time;
-        });
-    }, 1000);
-
-    // 开始任务按钮点击事件
-    document.getElementById("start-task-button").addEventListener("click", function() {
-        var taskSelect = document.getElementById("task-select");
-        var selectedTask = taskSelect.value;
-        disableStartButton();
-        alert("任务开始: " + selectedTask);
-        fetch('/run_task', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                'task': selectedTask
-            })
-        })
-        
-        
-        
-        
-        currentTask = selectedTask;
-           
-        
-    });
-
-    function disableStartButton() {
-        var startButton = document.getElementById("start-task-button");
-        startButton.disabled = true;
-        startButton.textContent = "任务进行中";
-    }
 
     function enableStartButton() {
         var startButton = document.getElementById("start-task-button");
         startButton.disabled = false;
-        startButton.textContent = "开始任务";
-        currentTask = null;
     }
 
-    // 轮询任务消息
+    async function updateCurrentTime() {
+        const response = await fetch('/get_current_time');
+        const data = await response.json();
+        document.getElementById("current-time").innerText = data.current_time;
+    }
+
+    setInterval(updateCurrentTime, 1000);
+
+    document.getElementById('start-task-button').addEventListener('click', async function() {
+        if (currentTask) {
+            const response = await fetch('/stop_task', { method: 'POST' });
+            if (response.ok) {
+                alert('任务已停止');
+                currentTask = false;
+                document.getElementById('start-task-button').innerText = '开始任务';
+                document.getElementById('task-status').innerHTML = '<p><i class="fas fa-times-circle"></i> 当前没有正在运行的任务</p>';
+            } else {
+                alert('没有正在运行的任务');
+            }
+        } else {
+            const form = document.getElementById('start-task-form');
+            const formData = new FormData(form);
+            const response = await fetch('/run_task', { method: 'POST', body: formData });
+            if (response.ok) {
+                alert('任务已开始');
+                currentTask = true;
+                document.getElementById('start-task-button').innerText = '停止任务';
+                document.getElementById('task-status').innerHTML = '<p><i class="fas fa-sync-alt fa-spin"></i> 任务正在进行中</p>';
+            } else {
+                alert('无法启动任务');
+            }
+        }
+    });
+
     function pollTaskMessages() {
         setInterval(() => {
             fetch('/get_task_messages')
@@ -153,7 +158,25 @@
                     }
                 });
             });
-        }, 1000); // 每秒轮询一次
+        }, 1000);
+    }
+
+    function pollTaskStatus() {
+        setInterval(async () => {
+            const response = await fetch('/get_task_status');
+            const data = await response.json();
+            if (data.task_running !== currentTask) {
+                currentTask = data.task_running;
+                if (currentTask) {
+                    document.getElementById('start-task-button').innerText = '停止任务';
+                    document.getElementById('task-status').innerHTML = '<p><i class="fas fa-sync-alt fa-spin"></i> 任务正在进行中</p>';
+                } else {
+                    document.getElementById('start-task-button').innerText = '开始任务';
+                    document.getElementById('task-status').innerHTML = '<p><i class="fas fa-times-circle"></i> 当前没有正在运行的任务</p>';
+                }
+            }
+        }, 1000);
     }
 </script>
+
 {% endblock %}

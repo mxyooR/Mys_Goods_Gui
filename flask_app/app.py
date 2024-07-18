@@ -8,8 +8,12 @@ from concurrent.futures import ThreadPoolExecutor
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from scripts.log import log_message, setup_logger
+from collections import defaultdict
 
 
+
+
+tasks = {}
 executor = ThreadPoolExecutor(max_workers=1)
 app = Flask(__name__)
 
@@ -19,14 +23,15 @@ goodslist_path = os.path.join(base_dir, 'goodslist.json')
 config_path = os.path.join(base_dir, 'config.json')
 tasklistpath = os.path.join(base_dir, 'tasklist.json')
 
-
-
-
+"""
+log_message
+所有的报错信息为英文
+成功信息为中文
+"""
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 #####################
 #开始任务#
@@ -35,16 +40,14 @@ def index():
 @app.route('/start_task', methods=['GET', 'POST'])
 async def start_task():
     try:
-        with open(tasklistpath,'r', encoding='utf-8') as f:
+        with open(tasklistpath, 'r', encoding='utf-8') as f:
             tasks = json.load(f)
-            log_message("successfully loaded tasklist.json")
+            log_message("成功读取任务清单")
     except Exception as e:
         log_message(f"Error loading tasklist.json: {e}")
         return redirect(url_for('create_task', alert="请先创建任务清单"))
 
-    return render_template('start_task.html', tasks=tasks, current_time=await exchange.get_ntp_time())
-
-
+    return render_template('start_task.html', tasks=tasks, current_time=await exchange.get_ntp_time(),task_running=global_vars.task_running)
 
 @app.route('/get_current_time')
 async def get_current_time():
@@ -55,6 +58,10 @@ async def get_current_time():
         formatted_time = "Error fetching NTP time"
     
     return jsonify(current_time=formatted_time)
+
+@app.route('/get_task_status', methods=['GET'])
+def get_task_status():
+    return jsonify(task_running=global_vars.task_running)
 
 
 
@@ -71,8 +78,10 @@ def run_task():
     selected_task_time = request.form.get('task')
     selected_task = next((task for task in tasks if task['time'] == selected_task_time), None)
     log_message(f"任务已经开始: {selected_task}")
+    global_vars.task_running = True
     executor.submit(run_asyncio_task, selected_task)
     return "Task is running"
+
 
 
 @app.route('/get_task_messages', methods=['GET'])
@@ -82,15 +91,13 @@ def get_task_messages():
     exchange.task_messages.clear()
     return jsonify(messages=messages)
 
-
-
-
-
-
-
-
-
-
+# 停止任务
+@app.route('/stop_task', methods=['POST'])
+def stop_task():
+    global_vars.task_running = False
+    messages = "任务已经停止"
+    log_message(messages)
+    return jsonify(messages=messages)
 
 #####################
 #获取个人信息
@@ -103,7 +110,7 @@ def get_user_info():
     qr_url, app_id, ticket, device = get_qr_url()
     # 使用 login.py 中的 show_qrcode 生成并保存二维码图片
     qr_image_path = os.path.join(base_dir, "static/code.png")
-    log_message(f"qrimagepath:{qr_image_path}")
+    log_message(f"二维码已成功保存在:{qr_image_path}")
     qr_image_url = url_for('static', filename='code.png')
     qr_image = show_qrcode(qr_url)
 
@@ -144,7 +151,7 @@ def check_qr_login():
 
          # Write the cookie to config.json
         config_data = {'cookie': cookie_str,"cookies_list": cookies_list, "device_id": global_vars.device_id}
-        log_message("successfully write cookie to config.json")
+        log_message("成功把cookie写入config.json")
         with open(config_path, 'w', encoding='utf-8') as f:
             
             json.dump(config_data, f)
@@ -181,8 +188,17 @@ def add_to_wishlist():
 
     # 使用 tools.py 中的 add_to_wishlist 函数
     tools.add_to_wishlist(product_name,product_id, product_time,product_biz)
-    log_message(f"Product added to wishlist:  {product_name}")
+    log_message(f"商品已经添加到备选清单:  {product_name}")
     return jsonify({'status': 'success', 'message': '已成功添加到备选清单'})
+
+
+# 删除心愿单中的商品
+@app.route('/clear_wishlist', methods=['POST'])
+def clear_wishlist():
+    tools.clear_goodslist()
+    log_message("备选清单已经清空")
+    return jsonify({"message": "备选清单已经清空"}), 200
+
 
 
 #####################
@@ -198,7 +214,7 @@ def create_task():
             return redirect(url_for('get_user_info', alert="请先登录"))
         # 获取地址数据
         address_data = details.getaddress(global_vars.cookie_str)
-        log_message(f"successfully get Address data")
+        log_message(f"成功获取地址")
         # 尝试读取商品清单
         try:
             with open(goodslist_path, 'r', encoding='utf-8') as f:
@@ -252,7 +268,7 @@ def add_to_tasklist():
             raise ValueError("config.json 中的 cookies 缺少必要的 account_id 或 device_id")
 
     except Exception as e:
-        print(f"Error retrieving account_id or device_id from config.json: {e}")
+        log_message(f"Error retrieving account_id or device_id from config.json: {e}")
         # 从 config.json 获取失败，尝试从 global_vars 获取
         try:
             
@@ -263,7 +279,7 @@ def add_to_tasklist():
             cookie = global_vars.cookie_str
             device_id = global_vars.device_id
         except IndexError:
-            print(f"Error retrieving account_id or device_id from global_vars: {e}")
+            log_message(f"Error retrieving account_id or device_id from global_vars: {e}")
             return jsonify({'status': 'error', 'message': '无法获取用户ID和设备ID'}), 500
 
     # 从请求中获取其他参数
@@ -288,16 +304,19 @@ def add_to_tasklist():
         return jsonify({'status': 'error', 'message': f'添加任务时发生错误: {str(e)}'}), 500
 
 
+# 删除任务清单中的任务
+@app.route('/clear_tasklist', methods=['POST'])
+def clear_tasklist():
+    tools.clear_tasklist()
+    log_message("任务清单已经清空")
+    return jsonify({"message": "任务清单已经清空"}), 200
 
 
 
 
-# 删除心愿单中的商品
-@app.route('/clear_wishlist', methods=['POST'])
-def clear_wishlist():
-    tools.clear_goodslist()
-    log_message("Wishlist cleared successfully")
-    return jsonify({"message": "Wishlist cleared successfully"}), 200
+
+
+
 
 
 
@@ -314,7 +333,7 @@ def load_config():
             config = json.load(f)
             global_vars.cookie_str = config['cookie']
             global_vars.device_id = config['device_id']
-            log_message("succesfully loaded config.json")
+            log_message("成功读取config.json")
         
     except Exception as e:
         print(f"None Cookie Exists: {e}")

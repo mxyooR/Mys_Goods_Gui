@@ -6,6 +6,7 @@ import ntplib
 from concurrent.futures import ThreadPoolExecutor
 from .log import log_message
 import os
+import global_vars
 
 
 task_messages = []
@@ -64,7 +65,7 @@ async def schedule_task(task):
         target_time = datetime.fromisoformat(task["time"])
         
 
-        while True:
+        while global_vars.task_running:
             
             ntp_time = await get_ntp_time()
             

@@ -27,7 +27,7 @@ def getaddress(cookie):
     }
 
     res = requests.get(url, headers=headers)
-    print(res.text)
+    #print(res.text)
     return res.json()
 
 

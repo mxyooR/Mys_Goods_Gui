@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
+
 {% block content %}
 <h2>获取个人信息</h2>
 <form id="qrLoginForm">
-    <h3>请使用米游社扫描二维码获取信息</h3>
+    <h3><i class="fas fa-qrcode"></i> 请使用米游社扫描二维码获取信息</h3>
     <img src="{{ qr_image_url }}" alt="QR Code">
     <input type="hidden" id="appId" value="{{ app_id }}">
     <input type="hidden" id="ticket" value="{{ ticket }}">
@@ -37,7 +41,6 @@
         });
     }
 
-    
     // 显示弹窗
     const alertMessage = "{{ alert | safe }}";
     if (alertMessage) {

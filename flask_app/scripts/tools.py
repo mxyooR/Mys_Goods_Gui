@@ -39,6 +39,11 @@ def clear_goodslist():
     with open(goodslist_path, 'w') as file:
         file.write('')
 
+def clear_tasklist():
+    with open(tasklistpath, 'w') as file:
+        file.write('')
+
+
 def format_cookie_string(cookie):
     return '; '.join([f"{key}={value}" for key, value in cookie.items()])
 

@@ -4,27 +4,36 @@
     <meta charset="UTF-8">
     <title>米游社兑换小助手</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='/favicon.ico') }}" type="image/x-icon">
 </head>
-
 <body>
-    
     <div class="sidebar">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('index') }}">主页</a>
+                <a class="nav-link" href="{{ url_for('index') }}">
+                    <i class="fas fa-home"></i> 主页
+                </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('start_task') }}">开始运行</a>
+                <a class="nav-link" href="{{ url_for('start_task') }}">
+                    <i class="fas fa-play"></i> 开始运行
+                </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('get_user_info') }}">获取个人信息</a>
+                <a class="nav-link" href="{{ url_for('get_user_info') }}">
+                    <i class="fas fa-user"></i> 获取个人信息
+                </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('product_list_view') }}">获取商品列表</a>
+                <a class="nav-link" href="{{ url_for('product_list_view') }}">
+                    <i class="fas fa-list"></i> 获取商品列表
+                </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('create_task') }}">新建任务</a>
+                <a class="nav-link" href="{{ url_for('create_task') }}">
+                    <i class="fas fa-plus"></i> 新建任务
+                </a>
             </li>
         </ul>
     </div>
