@@ -15,7 +15,7 @@
 - [ ] 优化ui界面
 - [ ] 增加一键打包的脚本
 - [x] 处理任务停止和重新开始
-
+- [x] 增加自定义兑换时post次数的选项
 
 ## 项目结构
 
@@ -81,18 +81,17 @@
     cd Mys_Goods_Gui
     ```
 
-2. 设置Python虚拟环境并安装依赖：
+2. 安装依赖：
 
     ```bash
-    python -m venv venv
-    source venv/bin/activate  # 对于Windows用户，使用 `venv\Scripts\activate`
+    cd flask_app
     pip install -r requirements.txt
     ```
 
 3. 安装Electron依赖：
 
     ```bash
-    cd electron
+    cd ..
     npm install
     ```
 
@@ -101,14 +100,14 @@
 1. 启动Flask后端：
 
     ```bash
-    cd ..
-    flask run
+    cd .flask_app
+    python app.py
     ```
 
 2. 启动Electron前端：
 
     ```bash
-    cd electron
+    cd ..
     npm start
     ```
 
@@ -123,4 +122,5 @@
 ## 注意
 
 仅供学习使用，请勿用于非法用途。
+由于日志输出使用的是电脑时间,而兑换时间使用的是ntp时间,所以日志上的时间会有所偏差.
 

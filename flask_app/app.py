@@ -121,9 +121,9 @@ def get_user_info():
     qr_url, app_id, ticket, device = get_qr_url()
     # 使用 login.py 中的 show_qrcode 生成并保存二维码图片
     qr_image_path = os.path.join(base_dir, "static/code.png")
-    log_message(f"二维码已成功保存在:{qr_image_path}")
     qr_image_url = url_for('static', filename='code.png')
-    qr_image = show_qrcode(qr_url)
+    show_qrcode(qr_url)
+    log_message(f"二维码已成功保存在:{qr_image_path}")
 
     if alert:
         return render_template('get_user_info.html', qr_image_url=qr_image_url, app_id=app_id, ticket=ticket, device=device, alert=alert)
