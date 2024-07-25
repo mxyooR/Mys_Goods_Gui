@@ -7,13 +7,14 @@ let flaskProcess = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 650,
     icon: path.join(__dirname, 'tray_icon.ico'), // 设置窗口图标
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: false,
     },
+    autoHideMenuBar: true,
   });
 
   mainWindow.loadURL('http://localhost:5000'); // 确保Flask应用程序在这个端口上运行

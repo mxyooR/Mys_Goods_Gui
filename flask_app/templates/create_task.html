@@ -28,6 +28,10 @@
         <label for="taskTime">时间</label>
         <input type="datetime-local" class="form-control" id="taskTime" name="taskTime" value="{{ default_time.replace(' ', 'T') }}">
     </div>
+    <div class="form-group">
+        <label for="count">尝试兑换次数 建议3-10之间 默认为5</label>
+        <input type="text" class="form-control" id="count" name="count" value=5>
+    </div>
     <button type="button" class="btn btn-primary" onclick="tasklist()">新建任务</button>
     <button type="button" class="btn btn-danger" id="clear-tasklist" onclick="clear_tasklist()">清空任务列表</button>
 </form>
@@ -57,13 +61,14 @@ function tasklist() {
     const task_time = document.getElementById('taskTime').value;
     const task_name = document.getElementById('taskName').value;
     const biz = document.querySelector('#productName option:checked').getAttribute('data-biz');
+    const count = document.getElementById('count').value;
     
     fetch('/add_to_tasklist', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ address: address, goods_id: goods_id, task_time: task_time, task_name: task_name, biz: biz })
+        body: JSON.stringify({ address: address, goods_id: goods_id, task_time: task_time, task_name: task_name, biz: biz ,count: count })
     }).then(() => {
         alert('任务创建成功');
     });

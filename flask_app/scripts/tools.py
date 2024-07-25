@@ -49,7 +49,7 @@ def format_cookie_string(cookie):
 
 
 
-def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie,time,name):
+def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie,time,name,count):
     """
     将任务添加到任务清单中
     """
@@ -94,13 +94,13 @@ def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie,time,name)
         'Sec-Fetch-Mode': "cors",
         'Cookie': cookie
     }
-    time=time
-    name=name
+    #生成格式
     task = {
         "name": name,
         "payload": payload,
         "headers": headers,
-        "time": time
+        "time": time,
+        "count":count
     }
     try:
         with open(tasklistpath, 'r', encoding='utf-8') as file:

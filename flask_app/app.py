@@ -65,22 +65,33 @@ def get_task_status():
 
 
 
-def run_asyncio_task(task_name):
+def run_asyncio_task(task_name,count):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(exchange.schedule_task(task_name))
+    loop.run_until_complete(exchange.schedule_task(task_name,count))
     loop.close()
 
 @app.route('/run_task', methods=['POST'])
 def run_task():
-    with open(tasklistpath,'r',encoding="utf-8") as f:
+    with open(tasklistpath, 'r', encoding="utf-8") as f:
         tasks = json.load(f)
     selected_task_time = request.form.get('task')
     selected_task = next((task for task in tasks if task['time'] == selected_task_time), None)
-    log_message(f"任务已经开始: {selected_task}")
-    global_vars.task_running = True
-    executor.submit(run_asyncio_task, selected_task)
-    return "Task is running"
+    
+    if selected_task:
+        count = selected_task.get('count', 5)  # 默认值为1，如果count不存在
+        try:
+            count = int(count)
+        except Exception as e:
+            log_message(f"Error converting count to integer: {e}")
+            log_message(f"自动改成默认值count: {count}")
+            count = 5
+        log_message(f"任务已经开始: {selected_task.get('name')}")
+        global_vars.task_running = True
+        executor.submit(run_asyncio_task, selected_task, count)
+        return "Task is running"
+    else:
+        return "Task not found", 404
 
 
 
@@ -287,16 +298,16 @@ def add_to_tasklist():
     address_id = request.json.get('address')
     time = request.json.get('task_time')
     name = request.json.get('task_name')
+    count = request.json.get('count')
     game_biz = request.json.get('biz')
 
-    log_message("成功加入任务清单")
 
-    if not goods_id or not address_id or not time or not name or not game_biz:
+    if not goods_id or not address_id or not time or not name or not game_biz or not count:
         log_message("Missing required parameters")
         return jsonify({'status': 'error', 'message': '请求数据缺失'}), 400
 
     try:
-        tools.add_to_tasklist(goods_id, uid, game_biz, address_id, device_id, cookie, time, name)
+        tools.add_to_tasklist(goods_id, uid, game_biz, address_id, device_id, cookie, time, name,count)
         log_message(f"Task added successfully: {name}")
         return jsonify({'status': 'success', 'message': '已成功添加到任务清单'})
     except Exception as e:

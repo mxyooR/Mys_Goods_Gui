@@ -49,7 +49,6 @@ async def exchange_goods(payload, headers):
             response = await client.post(url, data=json.dumps(payload), headers=headers)
             task_messages.append(response.text)
             log_message(response.text)
-            print(response.text)
         except httpx.HTTPStatusError as e:
             task_messages.append(f"HTTP error occurred: {e}")
             log_message(f"HTTP error occurred: {e}")
@@ -59,10 +58,13 @@ async def exchange_goods(payload, headers):
             log_message(f"An error occurred: {e}")
             print(f"An error occurred: {e}")
 
-async def schedule_task(task):
+async def schedule_task(task,count):
         payload = task["payload"]
         headers = task["headers"]
         target_time = datetime.fromisoformat(task["time"])
+        tasks = [exchange_goods(payload, headers) for _ in range(count)]
+        log_message(f"任务已添加到任务清单中, 将在 {target_time} 执行,{tasks}")
+
         
 
         while global_vars.task_running:
@@ -70,20 +72,14 @@ async def schedule_task(task):
             ntp_time = await get_ntp_time()
             
             if ntp_time:
-
-                ntp_time = ntp_time
                 task_messages.append(f"现在是北京时间： {ntp_time}")
-                print(f"在是北京时间： {ntp_time}")
                 delay = (target_time - ntp_time).total_seconds()
+                #注意 由于日志输出使用的是电脑时间 而兑换时间使用的是ntp时间 所以日志上的时间会有所偏差
                 if delay <= 15:
                     await asyncio.sleep(delay)
-                    await asyncio.gather(
-                        exchange_goods(payload, headers),
-                        exchange_goods(payload, headers),
-                        exchange_goods(payload, headers),
-                        exchange_goods(payload, headers),
-                        exchange_goods(payload, headers)
-                    )
+                    await asyncio.gather(*tasks)
+                    log_message(f"{await get_ntp_time()}任务已执行完成")
+                    global_vars.task_running=False
                     break
                 else:
                     
