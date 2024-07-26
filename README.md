@@ -14,6 +14,7 @@
 - [ ] 处理登录逻辑
 - [ ] 优化ui界面
 - [ ] 增加一键打包的脚本
+- [ ] 增加多用户功能
 - [x] 处理任务停止和重新开始
 - [x] 增加自定义兑换时post次数的选项
 
@@ -67,12 +68,18 @@
 
 ## 安装与运行
 
-### 先决条件
+### 普通用户
+
+- 直接在 release 页面下载最新版本即可。
+
+### 开发者
+
+#### 先决条件
 
 - Python 
 - Node.js 
 
-### 安装步骤
+#### 安装步骤
 
 1. 克隆本仓库：
 
@@ -81,30 +88,31 @@
     cd Mys_Goods_Gui
     ```
 
-2. 安装依赖：
+2. 安装 Python 依赖：
 
     ```bash
     cd flask_app
     pip install -r requirements.txt
     ```
 
-3. 安装Electron依赖：
+3. 安装 Electron 依赖：
 
     ```bash
     cd ..
     npm install
     ```
 
-### 运行应用
+#### 运行应用
 
-1. 启动Flask后端：
+1. 启动 Flask 后端：
 
     ```bash
-    cd .flask_app
+    cd flask_app
     python app.py
     ```
+    若无需 Electron，可直接在浏览器打开 `127.0.0.1:5000`
 
-2. 启动Electron前端：
+2. 启动 Electron 前端：
 
     ```bash
     cd ..
@@ -115,12 +123,12 @@
 
 本项目参考了以下开源项目：
 
-- https://github.com/Womsxd/mihoyo_login
-- https://github.com/Ljzd-PRO/nonebot-plugin-mystool
-- https://github.com/GOOD-AN/Mys-Exchange-Goods
+- [mihoyo_login](https://github.com/Womsxd/mihoyo_login)
+- [nonebot-plugin-mystool](https://github.com/Ljzd-PRO/nonebot-plugin-mystool)
+- [Mys-Exchange-Goods](https://github.com/GOOD-AN/Mys-Exchange-Goods)
 
-## 注意
+## 注意事项
 
-仅供学习使用，请勿用于非法用途。
-由于日志输出使用的是电脑时间,而兑换时间使用的是ntp时间,所以日志上的时间会有所偏差.
+- 本项目仅供学习使用，请勿用于非法用途。
+- 由于日志输出使用的是电脑时间，而兑换时间使用的是 NTP 时间，所以日志上的时间会有所偏差。
 

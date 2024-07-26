@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify,send_file
 from scripts import details,tools,exchange
 from scripts.login import get_qr_url, check_login, ReturnTotalCookie,show_qrcode
 import json
@@ -32,6 +32,11 @@ log_message
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/view_log')
+def view_log():
+    log_path = os.path.join(app.root_path, 'log.log')
+    return send_file(log_path, mimetype='text/plain')
 
 #####################
 #开始任务#

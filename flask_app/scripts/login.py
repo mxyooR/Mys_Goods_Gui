@@ -194,7 +194,7 @@ def show_qrcode(qr_url: str):
     """
     qr = QRCode()
     qr.add_data(qr_url)
-    image = qr.make_image(fill_color="black", back_color="white").resize((300, 300))
+    image = qr.make_image(fill_color="black", back_color="white")
     image.save(parent_dir+"/static"+"/code.png")
 
     
