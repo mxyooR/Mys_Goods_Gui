@@ -1,3 +1,4 @@
+import webbrowser
 from flask import Flask, render_template, request, redirect, url_for, jsonify,send_file
 from scripts import details,tools,exchange
 from scripts.login import get_qr_url, check_login, ReturnTotalCookie,show_qrcode
@@ -8,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from scripts.log import log_message, setup_logger
-from collections import defaultdict
+import uuid
 
 
 
@@ -136,7 +137,7 @@ def get_user_info():
         return render_template('get_user_info.html', qr_image_url=qr_image_url, app_id=app_id, ticket=ticket, device=device)
 
 
-@app.route('/check_qr_login', methods=['POST'])
+@app.route('/check_qr_login', methods=['POST']) #扫码登陆
 def check_qr_login():
     app_id = request.json.get('app_id')
     ticket = request.json.get('ticket')
@@ -153,30 +154,50 @@ def check_qr_login():
             log_message(f"Invalid login credentials: {uid}, {game_token}")
             return jsonify({'status': 'error', 'message': 'Invalid login credentials'}), 401
 
-        cookie = ReturnTotalCookie(uid, game_token, ticket)
-        if not cookie:
+        cookie_dict = ReturnTotalCookie(uid, game_token, ticket)
+        if not cookie_dict:
             log_message(f"Failed to generate cookie")
             return jsonify({'status': 'error', 'message': 'Failed to generate cookie'}), 500
-
-        # Convert cookie dictionary to a string
-        cookie_str = tools.format_cookie_string(cookie)
-        global_vars.cookie_str = cookie_str
-        # 创建单独项的 cookie 列表
-        cookies_list = [{key: value} for key, value in cookie.items()]
-        global_vars.cookie_stored = cookies_list
-
-         # Write the cookie to config.json
-        config_data = {'cookie': cookie_str,"cookies_list": cookies_list, "device_id": global_vars.device_id}
-        log_message("成功把cookie写入config.json")
+        global_vars.cookie_str =tools.dict_to_string(cookie_dict)
+        global_vars.cookie_dict["cookies_list"] = cookie_dict
+        global_vars.cookie_dict["device_id"] = device
+        config_data = global_vars.cookie_dict
         with open(config_path, 'w', encoding='utf-8') as f:
-            
-            json.dump(config_data, f)
-
-        return jsonify({'status': 'success', 'cookie': cookie_str})
-
+            json.dump(config_data, f, indent=4)
+        return jsonify({'status': 'success', 'cookie': global_vars.cookie_str})
     except Exception as e:
         log_message(f"An error occurred during QR login check: {e}")
         return jsonify({'status': 'error', 'message': 'Internal server error'}), 500
+    
+
+#手动获取信息登录   
+@app.route('/submit_manual', methods=['POST'])
+def submit_manual():
+    cookie = request.form.get('cookie')
+    cookie_dict_temp = tools.parse_cookies(cookie)
+    #print(cookie)
+    try:
+        global_vars.cookie_dict = {}
+        global_vars.cookie_dict["cookies_list"] = {}
+        cookies = global_vars.cookie_dict["cookies_list"]
+        cookies["ltoken"] = str(cookie_dict_temp["ltoken"])
+        # cookies["login_ticket"] = str(cookie_dict_temp["login_ticket"])
+        cookies["ltuid"] = str(cookie_dict_temp["ltuid"])
+        cookies["account_id"] = str(cookie_dict_temp["account_id"])
+        cookies["cookie_token"] = str(cookie_dict_temp["cookie_token"])
+        cookies["account_mid_v2"] = str(cookie_dict_temp["account_mid_v2"])
+        global_vars.cookie_dict["device_id"] = uuid.uuid4().hex
+
+        global_vars.cookie_str = tools.dict_to_string(global_vars.cookie_dict["cookies_list"])
+        
+        tools.add_to_config(global_vars.cookie_dict)
+        log_message("成功添加cookie到config.json")
+        return render_template('index.html', alert="success")
+    except Exception as e:
+        log_message(f"Error adding cookie to config: {e}")
+        return render_template('index.html', alert="error")
+
+
 
 
 
@@ -275,26 +296,11 @@ def create_task():
 @app.route('/add_to_tasklist', methods=['POST'])
 def add_to_tasklist():
     try:
-        # 尝试从 config.json 获取 cookies
-        cookies = tools.get_cookies_from_config()
-        uid = cookies.get('account_id')
-        device_id = cookies.get('device_id')
-        cookie = tools.get_cookiestr_from_config()
-        if not uid or not device_id:
-            raise ValueError("config.json 中的 cookies 缺少必要的 account_id 或 device_id")
-
-    except Exception as e:
-        log_message(f"Error retrieving account_id or device_id from config.json: {e}")
-        # 从 config.json 获取失败，尝试从 global_vars 获取
-        try:
             
-            for cookie_dict in global_vars.cookie_stored:
-                if 'account_id' in cookie_dict:
-                    uid = cookie_dict['account_id']
-                    break
+            uid = global_vars.cookie_dict['cookies_list']["account_id"]
             cookie = global_vars.cookie_str
             device_id = global_vars.device_id
-        except IndexError:
+    except IndexError:
             log_message(f"Error retrieving account_id or device_id from global_vars: {e}")
             return jsonify({'status': 'error', 'message': '无法获取用户ID和设备ID'}), 500
 
@@ -343,12 +349,13 @@ def clear_tasklist():
 def load_config():
     """
     从 config.json 文件中加载 cookie 和 device
-    """
+    """ 
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
-            global_vars.cookie_str = config['cookie']
+            global_vars.cookie_dict = config
             global_vars.device_id = config['device_id']
+            global_vars.cookie_str = tools.dict_to_string(global_vars.cookie_dict['cookies_list'])
             log_message("成功读取config.json")
         
     except Exception as e:
@@ -361,7 +368,6 @@ if __name__ == '__main__':
         with open(goodslist_path, 'w') as f:
             json.dump([], f)  
         log_message(f"goodlist不存在，已创建文件：{goodslist_path}")
-
-    log_message("Test log message")
     load_config()
-    app.run(debug=True)
+    app.run(debug=True,port=5000)
+    #webbrowser.open("http://127.0.0.1:5000/")

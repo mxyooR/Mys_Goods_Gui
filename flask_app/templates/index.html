@@ -16,4 +16,11 @@
         <li>运行任务：在侧边栏中点击“开始运行”来选择并启动任务。</li>
     </ol>
 
+<script>
+    // 显示弹窗
+    const alertMessage = "{{ alert | safe }}";
+    if (alertMessage) {
+        alert(alertMessage);
+    }
+</script>
 {% endblock %}

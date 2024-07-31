@@ -11,6 +11,27 @@
     <button type="button" class="btn btn-primary" onclick="checkQRLogin()">获取信息</button>
 </form>
 
+
+<h3>或手动填写用户信息</h3>
+<p>获取米游社 Cookie 的步骤：</p>
+<ol>
+    <li>打开你的浏览器，进入无痕/隐身模式。</li>
+    <li>打开 <a href="https://www.miyoushe.com/ys/" target="_blank">https://www.miyoushe.com/ys/</a> 并进行登入操作。</li>
+    <li>按下键盘上的 F12 或右键点击检查，打开开发者工具，点击 Source 或 源代码。</li>
+    <li>按下 Ctrl+F8 或点击停用断点按钮，点击 ▌▶ 解除暂停。</li>
+    <li>点击 Network 或 网络，在 Filter 或 筛选器里粘贴 getUserGameUnreadCount，同时选择 Fetch/XHR。</li>
+    <li>点击一条捕获到的结果，往下拉，找到 Cookie 部分，复制 Cookie 除去 Cookie: 的全部内容。</li>
+    <li>将复制的 Cookie 粘贴到下方。</li>
+    <li>完成后，Cookie 已经获取完毕。</li>
+</ol>
+<form id="cookieForm" method="post" action="{{ url_for('submit_manual') }}">
+    <div class="form-group">
+        <label for="cookieInput">cookie:</label>
+        <input type="text" class="form-control" id="cookieInput" name="cookie" placeholder="请输入cookie" required>
+    </div>
+    <button type="submit" class="btn btn-primary">提交</button>
+</form>
+
 <script>
     function checkQRLogin() {
         const appId = document.getElementById('appId').value;

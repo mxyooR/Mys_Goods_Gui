@@ -130,7 +130,7 @@ def get_point(cookie):
     需要stoken与stuid
     """
         
-    point_url = "https://bbs-api.mihoyo.com/apihub/sapi/getUserMissionsState"
+    point_url = "https://api-takumi.miyoushe.com/common/homutreasure/v1/web/user/point?app_id=1&point_sn=myb"
     point_headers = {
         'Cookie': cookie,
     }
@@ -147,7 +147,7 @@ def get_point(cookie):
         log_message(f"获取米游币数量失败, 原因为{point_req['message']}")
         return False
         
-    return point_req['data']['total_points']
+    return int(point_req['data']['points'])
 
 
 

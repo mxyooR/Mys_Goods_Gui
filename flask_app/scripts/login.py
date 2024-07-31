@@ -11,23 +11,14 @@ import uuid
 import hashlib
 from copy import deepcopy
 import os
-import global_vars
+#import global_vars
 
 #参考https://github.com/Womsxd/mihoyo_login项目 感谢开源
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 parent_dir = os.path.dirname(base_dir)
 
-cookie = {
-    'account_id': '',
-    'cookie_token': '',
-    'login_ticket': '',
-    'ltoken': '',
-    'ltuid': '',
-    'stoken': '',
-    "game_token": '',
-    "ltuid": '',
-    "mid":''
+cookie_dict = {
 }
 
 
@@ -300,24 +291,19 @@ def get_ltoken_by_stoken(cookies, device_id: str = None) :
     >>> assert asyncio.new_event_loop().run_until_complete(coroutine)[0].success is False
     """
     headers = HEADERS_QRCODE_API.copy()
-    
-
     try:
         res = requests.get(
             URL_LTOKEN_BY_STOKEN,
-            cookies=cookies.dict(v2_stoken=True, cookie_type=True),
+            cookies=cookies,
             headers=headers,
-            timeout="1000"
+            timeout=1000
         )
         api_result = res.json()
-        if api_result.success:
-            cookies.ltoken = api_result.data["ltoken"]
-            return cookies
-        elif api_result.login_expired:
-            print("通过 stoken 获取 ltoken: 登录失效")
-            return None
+        print(api_result)
+        ltoken = api_result["data"]["ltoken"]
+        return ltoken
 
-    except Exception as e:  # 使用更通用的异常处理，替代特定的异步异常处理
+    except Exception as e: 
         print(e)
         return  None
 
@@ -343,38 +329,33 @@ def ReturnTotalCookie(uid, game_token,ticket):
     """
     try:
         # Set initial cookie values
-        global_vars.device_id=device_id
-        cookie["account_id"] = uid
-        cookie["ltuid"] = uid
-        cookie["login_ticket"] = ticket
-        cookie["game_token"] = game_token
-
-        # Retrieve and set additional tokens
+        #global_vars.device_id=device_id
+        cookie_dict["account_id"] = uid
+        cookie_dict["ltuid"] = uid
+        cookie_dict["login_ticket"] = ticket
+        cookie_dict["game_token"] = game_token
         cookie_token = get_cookie_token_by_game_token(uid, game_token)
-        cookie["cookie_token"] = cookie_token
+        cookie_dict["cookie_token"] = cookie_token
 
         stoken = get_stoken_by_game_token(uid, game_token)
-        cookie["stoken"] = stoken
+        cookie_dict["stoken_v2"] = stoken
 
         mid = get_mid_by_game_token(uid, game_token)
-        cookie["mid"] = mid
-
-        # Assuming get_ltoken_by_stoken modifies the cookie dictionary in-place
-        get_ltoken_by_stoken(cookie, device_id=device_id)
-
-        # Ensure ltoken is set correctly if it's the same as stoken
-        cookie["ltoken"] = stoken
+        cookie_dict["ltmid_v2"] = mid
+        cookie_dict["ltoken"] = get_ltoken_by_stoken(cookie_dict, device_id=device_id)
 
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
 
-    # Print and return the final cookie dictionary
-    print("======================================")
-    print(cookie)
-    return cookie
+    return cookie_dict
 
-
+if __name__ == "__main__":
+    qr_url, app_id, ticket, device = get_qr_url()
+    show_qrcode(qr_url)
+    uid, game_token = check_login(app_id, ticket, device)
+    ReturnTotalCookie(uid, game_token,ticket)
+    print(cookie_dict)
 
 
 

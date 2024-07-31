@@ -44,12 +44,8 @@ def clear_tasklist():
         file.write('')
 
 
-def format_cookie_string(cookie):
-    return '; '.join([f"{key}={value}" for key, value in cookie.items()])
 
-
-
-def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie,time,name,count):
+def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie:str,time,name,count):
     """
     将任务添加到任务清单中
     """
@@ -118,36 +114,23 @@ def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie,time,name,
 
     return tasklist
 
-
-def get_cookies_from_config():
-    try:
-        with open(config_path, 'r') as file:
-            config = json.load(file)
-            cookies_list = config.get('cookies_list', [])
-            if cookies_list:
-                return cookies_list[0]  # 获取第一个cookie对象
-            else:
-                raise ValueError("config.json 中的 cookies_list 为空")
-    except FileNotFoundError:
-        raise FileNotFoundError("找不到 config.json 文件")
-    except json.JSONDecodeError:
-        raise ValueError("解析 config.json 文件时出错")
-    except Exception as e:
-        raise RuntimeError(f"读取 config.json 时发生错误: {str(e)}")
     
 
-def get_cookiestr_from_config():
-    try:
-        with open(config_path, 'r') as file:
-            config = json.load(file)
-            cookiestr = config.get('cookie', [])
-            if cookiestr:
-                return format_cookie_string(cookiestr)  # 获取第一个cookie对象
-            else:
-                raise ValueError("config.json 中的 cookiestr 为空")
-    except FileNotFoundError:
-        raise FileNotFoundError("找不到 config.json 文件")
-    except json.JSONDecodeError:
-        raise ValueError("解析 config.json 文件时出错")
-    except Exception as e:
-        raise RuntimeError(f"读取 config.json 时发生错误: {str(e)}")
+def parse_cookies(cookie_string:str)->dict:
+    # 拆分手动输入的cookie
+    cookies = cookie_string.split('; ')
+    cookie_dict = {}
+    for cookie in cookies:
+        key, value = cookie.split('=', 1)
+        cookie_dict[key] = value
+    
+    return cookie_dict
+
+def add_to_config(cookie_dict:dict):
+    with open(config_path, 'w',encoding='utf-8') as f:
+        json.dump(cookie_dict, f, indent=4)
+        print("Config updated successfully")
+
+def dict_to_string(d: dict) -> str:
+    # 将字典转换为字符串
+    return ';'.join(f"{k}={v}" for k, v in d.items())
