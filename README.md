@@ -71,6 +71,10 @@
 
 ### 开发者
 
+#### 开发文档
+
+#### [Develop](/docs/develop.md)
+
 #### 先决条件
 
 - Python 
@@ -124,9 +128,7 @@
     npm run package
     ```
 
-#### 开发文档
 
-[develop](/docs/develop.md)
 
 ## 参考项目
 
