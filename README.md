@@ -11,10 +11,10 @@
 
 ### 功能开发
 
-- [ ] 处理登录逻辑
 - [ ] 优化ui界面
 - [ ] 增加一键打包的脚本
 - [ ] 增加多用户功能
+- [x] 处理登录逻辑
 - [x] 处理任务停止和重新开始
 - [x] 增加自定义兑换时post次数的选项
 
@@ -41,15 +41,12 @@
     │  │  exchange.py  兑换主代码
     │  │  log.py       日志功能
     │  │  login.py     登录功能
+    │  |  login_stoken.py     使用游戏二维码登陆获取stoken等数据(已弃用)
     │  │  tools.py     写入和读取json
     │  │  __init__.py
     │  │
     │  └─__pycache__
-    │          details.cpython-311.pyc
-    │          exchange.cpython-311.pyc
-    │          log.cpython-311.pyc
-    │          login.cpython-311.pyc
-    │          tools.cpython-311.pyc
+    │        
     │
     ├─static
     │  │  code.png
@@ -119,6 +116,18 @@
     npm start
     ```
 
+3. 打包应用(option)：
+    ```bash
+    cd flask_app
+    pyinstaller.exe app.spec
+    cd ..
+    npm run package
+    ```
+
+#### 开发文档
+
+[develop](/docs/develop.md)
+
 ## 参考项目
 
 本项目参考了以下开源项目：
@@ -126,6 +135,8 @@
 - [mihoyo_login](https://github.com/Womsxd/mihoyo_login)
 - [nonebot-plugin-mystool](https://github.com/Ljzd-PRO/nonebot-plugin-mystool)
 - [Mys-Exchange-Goods](https://github.com/GOOD-AN/Mys-Exchange-Goods)
+- [mihoyo-api-collect](https://github.com/UIGF-org/mihoyo-api-collect)
+- [MihoyoBBSTools](https://github.com/Womsxd/MihoyoBBSTools)
 
 ## 注意事项
 - 由于日志输出使用的是电脑时间，而兑换时间使用的是 NTP 时间，所以日志上的时间会有所偏差。
