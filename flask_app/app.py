@@ -1,7 +1,6 @@
 import webbrowser
 from flask import Flask, render_template, request, redirect, url_for, jsonify,send_file
-from scripts import details,tools,exchange
-from scripts.login import get_qr_url, check_login, ReturnTotalCookie,show_qrcode
+from scripts import details,tools,exchange,login
 import json
 import os
 import global_vars
@@ -10,6 +9,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from scripts.log import log_message, setup_logger
 import uuid
+from datetime import datetime 
 
 
 
@@ -55,15 +55,7 @@ async def start_task():
 
     return render_template('start_task.html', tasks=tasks, current_time=await exchange.get_ntp_time(),task_running=global_vars.task_running)
 
-@app.route('/get_current_time')
-async def get_current_time():
-    ntp_time = await exchange.get_ntp_time()
-    if ntp_time is not None:
-        formatted_time = ntp_time.strftime('%Y-%m-%d %H:%M:%S')
-    else:
-        formatted_time = "Error fetching NTP time"
-    
-    return jsonify(current_time=formatted_time)
+
 
 @app.route('/get_task_status', methods=['GET'])
 def get_task_status():
@@ -124,44 +116,33 @@ def stop_task():
 def get_user_info():
     alert = request.args.get('alert')
     # 获取二维码 URL
-    qr_url, app_id, ticket, device = get_qr_url()
+    qr_code_url, ticket = login.get_qr_code()
     # 使用 login.py 中的 show_qrcode 生成并保存二维码图片
     qr_image_path = os.path.join(base_dir, "static/code.png")
     qr_image_url = url_for('static', filename='code.png')
-    show_qrcode(qr_url)
+    login.show_qrcode(qr_code_url)
     log_message(f"二维码已成功保存在:{qr_image_path}")
 
     if alert:
-        return render_template('get_user_info.html', qr_image_url=qr_image_url, app_id=app_id, ticket=ticket, device=device, alert=alert)
+        return render_template('get_user_info.html', qr_image_url=qr_image_url, ticket=ticket, alert=alert)
     else:
-        return render_template('get_user_info.html', qr_image_url=qr_image_url, app_id=app_id, ticket=ticket, device=device)
+        return render_template('get_user_info.html', qr_image_url=qr_image_url, ticket=ticket)
 
 
 @app.route('/check_qr_login', methods=['POST']) #扫码登陆
 def check_qr_login():
-    app_id = request.json.get('app_id')
+    log_message("开始尝试二维码登录")
     ticket = request.json.get('ticket')
-    device = request.json.get('device')
-    log_message(f"app_id:{app_id},ticket:{ticket},device:{device}")
-
-    if not app_id or not ticket or not device:
-        return jsonify({'status': 'error', 'message': 'Missing required parameters'}), 400
-
     try:
-        # Check QR code login status
-        uid, game_token = check_login(app_id, ticket, device)
-        if not uid or not game_token:
-            log_message(f"Invalid login credentials: {uid}, {game_token}")
-            return jsonify({'status': 'error', 'message': 'Invalid login credentials'}), 401
-
-        cookie_dict = ReturnTotalCookie(uid, game_token, ticket)
+        cookie_dict,device_id = login.ReturnTotalCookie(ticket)
         if not cookie_dict:
             log_message(f"Failed to generate cookie")
             return jsonify({'status': 'error', 'message': 'Failed to generate cookie'}), 500
         global_vars.cookie_str =tools.dict_to_string(cookie_dict)
         global_vars.cookie_dict["cookies_list"] = cookie_dict
-        global_vars.cookie_dict["device_id"] = device
+        global_vars.cookie_dict["device_id"] = device_id
         config_data = global_vars.cookie_dict
+        log_message(f"成功添加cookie到config.json")
         with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(config_data, f, indent=4)
         return jsonify({'status': 'success', 'cookie': global_vars.cookie_str})
@@ -173,6 +154,7 @@ def check_qr_login():
 #手动获取信息登录   
 @app.route('/submit_manual', methods=['POST'])
 def submit_manual():
+    log_message("开始尝试手动登录")
     cookie = request.form.get('cookie')
     cookie_dict_temp = tools.parse_cookies(cookie)
     #print(cookie)

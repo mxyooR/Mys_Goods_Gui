@@ -3,6 +3,8 @@
 
 {% block content %}
 <h2>开始任务</h2>
+<li>由于日志输出使用的是电脑时间 而兑换时间使用的是ntp时间 所以日志上的时间会有所偏差 </li>
+<li>前后端校准时间分离，前端获取本地时间，后端获取ntp时间，任务运行默认30秒校准一次，小于60秒不再校准</li>
 
 <form method="POST" action="/run_task" id="start-task-form">
     <label for="task-select">选择任务:</label>
@@ -19,7 +21,7 @@
         </tr>
         <tr>
             <td><span id="target-time"></span></td>
-            <td><span id="current-time">{{ current_time }}</span></td>
+            <td><span id="current-time"></span></td>
         </tr>
     </table>
     <br>
@@ -71,6 +73,36 @@
         enableStartButton();
     });
 
+
+
+    function showTime() {
+            // 获取当前时间
+            let date = new Date();
+            let year = date.getFullYear();
+            let month = date.getMonth() + 1; 
+            let day = date.getDate();
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            let seconds = date.getSeconds();
+
+            month = (month < 10 ? '0' : '') + month;
+            day = (day < 10 ? '0' : '') + day;
+            hours = (hours < 10 ? '0' : '') + hours;
+            minutes = (minutes < 10 ? '0' : '') + minutes;
+            seconds = (seconds < 10 ? '0' : '') + seconds;
+
+            let timeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            document.getElementById('current-time').innerText = timeString;
+
+            setTimeout(showTime, 1000);
+        }
+
+    window.onload = function() {
+        showTime();
+    };
+
+
+
     function updateTaskTime() {
         var taskSelect = document.getElementById("task-select");
         var taskTime = taskSelect.value;
@@ -109,11 +141,6 @@
         startButton.disabled = false;
     }
 
-    async function updateCurrentTime() {
-        const response = await fetch('/get_current_time');
-        const data = await response.json();
-        document.getElementById("current-time").innerText = data.current_time;
-    }
 
     setInterval(updateCurrentTime, 1000);
 

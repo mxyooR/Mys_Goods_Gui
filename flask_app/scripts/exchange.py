@@ -31,7 +31,6 @@ async def get_ntp_time():
             # 时区转换
             return datetime.utcfromtimestamp(response.tx_time) + timedelta(hours=8)
         except Exception as e:
-            print(f"获取NTP时间失败: {e}")
             return None
     
     loop = asyncio.get_event_loop()
@@ -75,7 +74,7 @@ async def schedule_task(task,count):
                 task_messages.append(f"现在是北京时间： {ntp_time}")
                 delay = (target_time - ntp_time).total_seconds()
                 #注意 由于日志输出使用的是电脑时间 而兑换时间使用的是ntp时间 所以日志上的时间会有所偏差
-                if delay <= 30:
+                if delay <= 60:
                     await asyncio.sleep(delay)
                     await asyncio.gather(*tasks)
                     log_message(f"{await get_ntp_time()}任务已执行完成")
@@ -83,7 +82,7 @@ async def schedule_task(task,count):
                     break
                 else:
                     task_messages.append(f"目前还剩余 {delay} 秒. 120秒后重新校准时间")
-                    await asyncio.sleep(120)
+                    await asyncio.sleep(30)
             else:
                 task_messages.append("获取NTP时间失败. 1秒后重试")
                 await asyncio.sleep(1)
