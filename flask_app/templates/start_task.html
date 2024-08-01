@@ -142,8 +142,6 @@
     }
 
 
-    setInterval(updateCurrentTime, 1000);
-
     document.getElementById('start-task-button').addEventListener('click', async function() {
         if (currentTask) {
             const response = await fetch('/stop_task', { method: 'POST' });

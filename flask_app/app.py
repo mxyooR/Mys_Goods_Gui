@@ -351,5 +351,5 @@ if __name__ == '__main__':
             json.dump([], f)  
         log_message(f"goodlist不存在，已创建文件：{goodslist_path}")
     load_config()
-    app.run(debug=True,port=5000)
+    app.run(debug=False,port=5000)
     #webbrowser.open("http://127.0.0.1:5000/")
