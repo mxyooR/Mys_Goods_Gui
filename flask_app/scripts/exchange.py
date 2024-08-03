@@ -45,7 +45,7 @@ async def exchange_goods(payload, headers):
 
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(url, data=json.dumps(payload), headers=headers)
+            response = await client.post(url, data=payload, headers=headers)
             task_messages.append(response.text)
             log_message(response.text)
         except httpx.HTTPStatusError as e:
