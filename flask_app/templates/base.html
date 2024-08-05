@@ -36,6 +36,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="javascript:void(0);" onclick="openTaskList()">
+                    <i class="fas fa-tasks"></i> 打开任务列表
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="javascript:void(0);" onclick="openLogFile()">
                     <i class="fas fa-file-alt"></i> 打开日志文件
                 </a>
@@ -48,6 +53,9 @@
     <script type="text/javascript">
         function openLogFile() {
             window.open('/view_log', '_blank');
+        }
+        function openTaskList() {
+            fetch('/open_task_list');
         }
     </script>
 </body>

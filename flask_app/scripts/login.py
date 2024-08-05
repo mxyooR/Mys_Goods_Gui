@@ -4,6 +4,7 @@ import time
 import uuid
 import re
 import os
+from .log import log_message
 
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
@@ -97,6 +98,7 @@ def ReturnTotalCookie(ticket):
     cookie_dict={}
     cookie_headers=check_login_status(ticket)
     set_cookie = cookie_headers.get('Set-Cookie', '')
+    log_message(f"成功获取cookie: {set_cookie}")
     cookie_names = ['account_id', 'ltoken', 'ltuid', 'cookie_token', 'account_mid_v2']
     # 遍历cookie名称并提取值
     for name in cookie_names:

@@ -1,5 +1,7 @@
 import json
 import os
+import  random 
+from string import hexdigits
 
 
 # 获取当前文件的绝对路径
@@ -44,6 +46,10 @@ def clear_tasklist():
         file.write('')
 
 
+def generate_random_fp() -> str:
+    prefix = "38d7"
+    suffix = ''.join(random.choices(hexdigits.lower()[:16], k=9)) # Random 9 characters from 0-9 and a-f
+    return prefix + suffix
 
 def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie:str,time,name,count):
     """
@@ -78,7 +84,7 @@ def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie:str,time,n
         'Origin': "https://webstatic.miyoushe.com",
         'Sec-Fetch-Dest': "empty",
         'Sec-Fetch-Site': "same-site",
-        'x-rpc-device_fp': "38d7eef117a46",
+        'x-rpc-device_fp': str(generate_random_fp()),
         'x-rpc-channel': "xiaomi",
         'Accept-Language': "zh-CN,zh-Hans;q=0.9",
         'x-rpc-app_version': "2.71.1",

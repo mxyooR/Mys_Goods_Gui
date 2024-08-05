@@ -1,5 +1,5 @@
 import webbrowser
-from flask import Flask, render_template, request, redirect, url_for, jsonify,send_file
+from flask import Flask, render_template, request, redirect, url_for, jsonify,send_file,Response
 from scripts import details,tools,exchange,login
 import json
 import os
@@ -38,6 +38,11 @@ def index():
 def view_log():
     log_path = os.path.join(app.root_path, 'log.log')
     return send_file(log_path, mimetype='text/plain')
+
+@app.route('/open_task_list')
+def open_task_list():
+    os.startfile(tasklistpath)
+    return "已打开"
 
 #####################
 #开始任务#
@@ -351,5 +356,5 @@ if __name__ == '__main__':
             json.dump([], f)  
         log_message(f"goodlist不存在，已创建文件：{goodslist_path}")
     load_config()
-    app.run(debug=False,port=5000)
+    app.run(debug=True,port=5000)
     #webbrowser.open("http://127.0.0.1:5000/")
