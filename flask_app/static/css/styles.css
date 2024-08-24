@@ -203,3 +203,14 @@ button:hover {
     border: 1px solid #ccc; /* 边框样式 */
     padding: 10px; /* 内边距 */
 }
+.task-messages {
+    width: 100%;
+    height: 200px;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+.task-container {
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    padding: 10px;
+}

@@ -48,7 +48,11 @@
                                     <input type="hidden" name="product_name" value="{{ product.name }}">
                                     <input type="hidden" name="product_biz" class="product-biz" value="{{ game_biz }}">
                                     {% if golds >= product.price %}
+                                        {% if product.time !="1970-01-01 08:00:00" %}
                                         <button type="button" class="btn btn-success btn-sm add-to-wishlist">加入备选清单</button>
+                                        {% else %}
+                                        <button type="button" class="button-locked" disabled>商品不可兑换</button>
+                                        {% endif %}
                                     {% else %}
                                         <button type="button" class="button-locked" disabled>金币不足</button>
                                     {% endif %}

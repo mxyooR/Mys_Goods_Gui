@@ -1,15 +1,9 @@
 import json
-import os
 import  random 
 from string import hexdigits
+from global_vars import goodslist_path,config_path,tasklistpath
 
 
-# 获取当前文件的绝对路径
-base_dir = os.path.abspath(os.path.dirname(__file__))
-parent_dir = os.path.dirname(base_dir)
-goodslist_path = os.path.join(parent_dir, 'goodslist.json')
-config_path = os.path.join(parent_dir, 'config.json')
-tasklistpath = os.path.join(parent_dir, 'tasklist.json')
 
 def add_to_wishlist(product_name,product_id, product_time,product_biz):
     """

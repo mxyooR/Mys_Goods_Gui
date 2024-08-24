@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 
-
 {% block content %}
 <h2>开始任务</h2>
 <li>由于日志输出使用的是电脑时间 而兑换时间使用的是ntp时间 所以日志上的时间会有所偏差 </li>
@@ -10,7 +9,7 @@
     <label for="task-select">选择任务:</label>
     <select id="task-select" name="task">
         {% for task in tasks %}
-        <option value="{{ task.time }}">{{ task.name }}</option>
+        <option value="{{ task.name }}" data-time="{{ task.time }}">{{ task.name }}</option>
         {% endfor %}
     </select>
     <br><br>
@@ -36,11 +35,7 @@
 
     <br>
     <button type="button" class="btn btn-primary" id="start-task-button">
-        {% if task_running %}
-            停止任务
-        {% else %}
-            开始任务
-        {% endif %}
+        开始任务
     </button>
 </form>
 
@@ -52,66 +47,67 @@
     {% endif %}
 </div>
 
-
-<div class="scroll-box" id="task-messages">
-    <h3>任务消息</h3>
-    <ul id="messages-list"></ul>
+<div id="running-tasks">
+    <h3>正在运行的任务</h3>
+    <!-- 这里将动态添加正在运行的任务 -->
 </div>
 
 
 <script>
-    let currentTask = {{ 'true' if task_running else 'false' }};
-
+    //轮回事件
     document.addEventListener('DOMContentLoaded', function() {
         updateTaskTime();
         pollTaskMessages();
+        loadRunningTasks();
         pollTaskStatus();
-    });
-
+        showTime();
+    }); 
     document.getElementById("task-select").addEventListener("change", function() {
         updateTaskTime();
         enableStartButton();
     });
 
 
-
+    //显示时间
     function showTime() {
-            // 获取当前时间
-            let date = new Date();
-            let year = date.getFullYear();
-            let month = date.getMonth() + 1; 
-            let day = date.getDate();
-            let hours = date.getHours();
-            let minutes = date.getMinutes();
-            let seconds = date.getSeconds();
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = (date.getMonth() + 1).toString().padStart(2, '0');
+        let day = date.getDate().toString().padStart(2, '0');
+        let hours = date.getHours().toString().padStart(2, '0');
+        let minutes = date.getMinutes().toString().padStart(2, '0');
+        let seconds = date.getSeconds().toString().padStart(2, '0');
 
-            month = (month < 10 ? '0' : '') + month;
-            day = (day < 10 ? '0' : '') + day;
-            hours = (hours < 10 ? '0' : '') + hours;
-            minutes = (minutes < 10 ? '0' : '') + minutes;
-            seconds = (seconds < 10 ? '0' : '') + seconds;
+        let timeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        document.getElementById('current-time').innerText = timeString;
 
-            let timeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-            document.getElementById('current-time').innerText = timeString;
-
-            setTimeout(showTime, 1000);
-        }
-
-    window.onload = function() {
-        showTime();
-    };
-
-
-
-    function updateTaskTime() {
-        var taskSelect = document.getElementById("task-select");
-        var taskTime = taskSelect.value;
-
-        var formattedTaskTime = taskTime.replace('T', ' ') + ":00";
-
-        document.getElementById("target-time").innerText = formattedTaskTime;
+        setTimeout(showTime, 1000);
     }
 
+    //加载正在运行的任务
+    async function loadRunningTasks() {
+        try {
+            const response = await fetch('/get_running_tasks');
+            const data = await response.json();
+            
+            data.running_tasks.forEach(taskName => {
+                addRunningTask(taskName);
+            });
+        } catch (error) {
+            console.error('Error loading running tasks:', error);
+        }
+    }
+
+
+    //更新任务时间
+    function updateTaskTime() {
+        var taskSelect = document.getElementById("task-select");
+        var taskTime = taskSelect.options[taskSelect.selectedIndex].getAttribute("data-time");
+        console.log(taskTime);
+        var formattedTaskTime = taskTime.replace('T', ' ') + ":00";
+        document.getElementById("target-time").innerText = formattedTaskTime;
+    }
+    //更新剩余时间
     setInterval(function() {
         var targetTimeString = document.getElementById("target-time").innerText;
         var currentTimeString = document.getElementById("current-time").innerText;
@@ -123,7 +119,6 @@
 
         if (timeDifference > 0) {
             var remainingSeconds = Math.floor(timeDifference / 1000);
-
             var hours = Math.floor(remainingSeconds / 3600);
             remainingSeconds %= 3600;
             var minutes = Math.floor(remainingSeconds / 60);
@@ -136,69 +131,119 @@
         }
     }, 1000);
 
+    //启用开始按钮
     function enableStartButton() {
         var startButton = document.getElementById("start-task-button");
         startButton.disabled = false;
     }
 
 
+    //开始任务
     document.getElementById('start-task-button').addEventListener('click', async function() {
-        if (currentTask) {
-            const response = await fetch('/stop_task', { method: 'POST' });
-            if (response.ok) {
-                alert('任务已停止');
-                currentTask = false;
-                document.getElementById('start-task-button').innerText = '开始任务';
-                document.getElementById('task-status').innerHTML = '<p><i class="fas fa-times-circle"></i> 当前没有正在运行的任务</p>';
-            } else {
-                alert('没有正在运行的任务');
-            }
+        const form = document.getElementById('start-task-form');
+        const formData = new FormData(form);
+        const taskSelect = document.getElementById('task-select');
+        const selectedTaskName = taskSelect.options[taskSelect.selectedIndex].text;
+        
+        console.log('Starting task:', selectedTaskName); 
+
+        const response = await fetch('/run_task', { 
+            method: 'POST', 
+            body: formData 
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log('Task started successfully:', data.task_name); 
+            alert('任务已开始: ' + data.task_name);
+            addRunningTask(data.task_name);
+            document.getElementById('start-task-button').innerText = '开始新任务';
         } else {
-            const form = document.getElementById('start-task-form');
-            const formData = new FormData(form);
-            const response = await fetch('/run_task', { method: 'POST', body: formData });
-            if (response.ok) {
-                alert('任务已开始');
-                currentTask = true;
-                document.getElementById('start-task-button').innerText = '停止任务';
-                document.getElementById('task-status').innerHTML = '<p><i class="fas fa-sync-alt fa-spin"></i> 任务正在进行中</p>';
-            } else {
-                alert('无法启动任务');
-            }
+            console.error('Failed to start task:', data.error); 
+            alert(`无法启动任务: ${data.error}`);
         }
     });
 
+
+
+    //添加正在运行的任务
+    function addRunningTask(taskName) {
+        if (!document.getElementById(`task-${taskName}`)) {
+            const runningTasks = document.getElementById('running-tasks');
+            const taskDiv = document.createElement('div');
+            taskDiv.id = `task-${taskName}`;
+            taskDiv.className = 'task-container';
+            taskDiv.innerHTML = `
+                <h4>${taskName}</h4>
+                <textarea class="task-messages" readonly></textarea>
+                <button onclick="stopTask('${taskName}')">停止任务</button>
+            `;
+            runningTasks.appendChild(taskDiv);}
+    }
+    //移除正在运行的任务
+    function removeRunningTask(taskName) {
+        const taskDiv = document.getElementById(`task-${taskName}`);
+        if (taskDiv) {
+            taskDiv.remove();
+        }
+    }
+    //停止任务
+    function stopTask(taskName) {
+        fetch('/stop_task', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `task_name=${encodeURIComponent(taskName)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.messages);
+            removeRunningTask(taskName);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    //更新任务消息
+    function updateTaskMessages(taskName, messages) {
+        const taskDiv = document.getElementById(`task-${taskName}`);
+        if (taskDiv) {
+            const messagesTextarea = taskDiv.querySelector('.task-messages');
+            messages.forEach(message => {
+                messagesTextarea.value += message + '\n';
+            });
+            messagesTextarea.scrollTop = messagesTextarea.scrollHeight;
+        }
+    }
+    //轮询任务消息
     function pollTaskMessages() {
         setInterval(() => {
-            fetch('/get_task_messages')
-            .then(response => response.json())
-            .then(data => {
-                var messagesList = document.getElementById('messages-list');
-                var currentMessages = Array.from(messagesList.getElementsByTagName('li')).map(li => li.textContent);
-                data.messages.forEach(message => {
-                    if (!currentMessages.includes(message)) {
-                        var li = document.createElement('li');
-                        li.textContent = message;
-                        messagesList.appendChild(li);
+            // 获取所有正在运行的任务
+            const runningTasks = document.querySelectorAll('.task-container');
+            
+            runningTasks.forEach(taskDiv => {
+                const taskName = taskDiv.id.replace('task-', '');
+                
+                fetch(`/get_task_messages?task_name=${encodeURIComponent(taskName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.messages[taskName]) {
+                        updateTaskMessages(taskName, data.messages[taskName]);
                     }
-                });
+                })
+                .catch(error => console.error('Error:', error));
             });
         }, 1000);
     }
 
+    //轮询任务状态
     function pollTaskStatus() {
         setInterval(async () => {
             const response = await fetch('/get_task_status');
             const data = await response.json();
-            if (data.task_running !== currentTask) {
-                currentTask = data.task_running;
-                if (currentTask) {
-                    document.getElementById('start-task-button').innerText = '停止任务';
-                    document.getElementById('task-status').innerHTML = '<p><i class="fas fa-sync-alt fa-spin"></i> 任务正在进行中</p>';
-                } else {
-                    document.getElementById('start-task-button').innerText = '开始任务';
-                    document.getElementById('task-status').innerHTML = '<p><i class="fas fa-times-circle"></i> 当前没有正在运行的任务</p>';
-                }
+            if (data.task_running) {
+                document.getElementById('task-status').innerHTML = '<p><i class="fas fa-sync-alt fa-spin"></i> 任务正在进行中</p>';
+            } else {
+                document.getElementById('task-status').innerHTML = '<p><i class="fas fa-times-circle"></i> 当前没有正在运行的任务</p>';
             }
         }, 1000);
     }

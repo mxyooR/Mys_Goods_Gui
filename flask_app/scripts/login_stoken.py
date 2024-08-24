@@ -1,3 +1,7 @@
+"""
+本登陆方式已弃用
+"""
+
 import json
 import time
 import httpx

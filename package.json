@@ -1,6 +1,6 @@
 {
   "name": "mys-goods-gui",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "A flask app for mihoyo bbs auto exchanging goods .",
   "main": "main.js",
   "scripts": {
