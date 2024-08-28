@@ -66,8 +66,9 @@ def add_to_tasklist(goods_id,uid,game_biz,address_id,device_id,cookie:str,time,n
         "uid": uid,
         "region": region,
         "game_biz": game_biz,
-        "address_id": address_id
     }
+    if address_id!="":
+        payload["address_id"]=address_id
     headers = {
         'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Unspecified Device) AppleWebKit/537.36 (KHTML, like Gecko) '
                          'Version/4.0 Chrome/103.0.5060.129 Mobile Safari/537.36',

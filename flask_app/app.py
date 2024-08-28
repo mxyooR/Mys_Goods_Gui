@@ -319,7 +319,7 @@ def add_to_tasklist():
     game_biz = request.json.get('biz')
 
 
-    if not goods_id or not address_id or not time or not name or not game_biz or not count:
+    if not goods_id  or not time or not name or not game_biz or not count:
         log_message("Missing required parameters")
         return jsonify({'status': 'error', 'message': '请求数据缺失'}), 400
 
@@ -338,13 +338,6 @@ def clear_tasklist():
     tools.clear_tasklist()
     log_message("任务清单已经清空")
     return jsonify({"message": "任务清单已经清空"}), 200
-
-
-
-
-
-
-
 
 
 
