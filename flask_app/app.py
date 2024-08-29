@@ -250,9 +250,13 @@ def add_to_wishlist():
 # 删除心愿单中的商品
 @app.route('/clear_wishlist', methods=['POST'])
 def clear_wishlist():
-    tools.clear_goodslist()
-    log_message("备选清单已经清空")
-    return jsonify({"message": "备选清单已经清空"}), 200
+    try:
+        tools.clear_goodslist()
+        log_message("备选清单已经清空")
+        return jsonify({"message": "备选清单已经清空",'status': 'success'}), 200
+    except Exception as e:
+        log_message(f"Error clearing wishlist: {e}")
+        return jsonify({"message": "错误",'status': 'error'}), 500
 
 
 
