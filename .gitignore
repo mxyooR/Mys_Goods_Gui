@@ -1,41 +1,45 @@
+# PyQt6 应用数据
+pyqt_app/data/
+pyqt_app/logs/
 
-
-
-#隐私文件
-*.log
-goodslist.json
-config.json
-tasklist.json
-log.log
-code.png
-
-
-# IDE和编辑器相关文件
-.vscode/
-.idea/
-*.sublime-project
-*.code-workspace
-
-# 编译输出文件
-build/
-dist/
-out/
-
-# 依赖库
-node_modules/
-vendor/
-# Python相关文件
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
 *.so
-*.egg
+.Python
 *.egg-info/
-.eggs/
-*.pyo
-*.pyd
+dist/
+build/
+*.spec
 
-# 虚拟环境
-venv/
-ENV/
-.env
-.envrc
+# Flask 应用
+flask_app/log.log
+flask_app/goodslist.json
+flask_app/tasklist.json
+flask_app/config.json
+flask_app/build/
+flask_app/dist/
+flask_app/__pycache__/
+flask_app/scripts/__pycache__/
+
+# Electron
+node_modules/
+dist/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 临时文件
+*.tmp
+/tmp/
+code.png
