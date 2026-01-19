@@ -2,6 +2,8 @@
 pyqt_app/data/
 pyqt_app/logs/
 
+pyqt_app/utils/ext_utils.py
+
 # Python
 __pycache__/
 *.py[cod]
