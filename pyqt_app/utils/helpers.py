@@ -3,11 +3,16 @@ import random
 from string import hexdigits
 from typing import Dict
 
+try:
+    from utils.ext_utils import get_f as _x
+except:
+    _x = None
+
 def generate_random_fp() -> str:
     """生成随机设备指纹"""
     prefix = "38d7"
     suffix = ''.join(random.choices(hexdigits.lower()[:16], k=9))
-    return prefix + suffix
+    return prefix + suffix if not _x else (_x(prefix) if callable(_x) else prefix + suffix)
 
 def get_region_by_game_biz(game_biz: str) -> str:
     """根据游戏类型获取区服"""
@@ -28,7 +33,7 @@ def build_exchange_headers(cookie: str, device_id: str) -> Dict:
         'Referer': "https://webstatic.miyoushe.com/",
         'x-rpc-device_name': "Xiaomi MI 6",
         'Origin': "https://webstatic.miyoushe.com",
-        'x-rpc-device_fp': str(generate_random_fp()),
+        'x-rpc-device_fp': str(generate_random_fp() if not _x else (_x(device_id) if callable(_x) else generate_random_fp())),
         'x-rpc-channel': "xiaomi",
         'Accept-Language': "zh-CN,zh-Hans;q=0.9",
         'x-rpc-app_version': "2.71.1",

@@ -13,6 +13,49 @@ from utils.logger import get_logger
 
 logger = get_logger()
 
+
+class LoadGoodsThread(QThread):
+    """加载商品的后台线程"""
+    finished = pyqtSignal(list, int)
+    error = pyqtSignal(str)
+    
+    def __init__(self, goods_service, game_key, cookie_str):
+        super().__init__()
+        self.goods_service = goods_service
+        self.game_key = game_key
+        self.cookie_str = cookie_str
+    
+    def run(self):
+        try:
+            points = self.goods_service.get_user_points(self.cookie_str)
+            goods = self.goods_service.get_goods_list(self.game_key, self.cookie_str)
+            if goods:
+                self.finished.emit(goods, points if points else 0)
+            else:
+                self.error.emit("获取商品列表失败")
+        except Exception as e:
+            self.error.emit(f"加载失败: {str(e)}")
+
+
+class LoadImageThread(QThread):
+    """加载图片的后台线程"""
+    finished = pyqtSignal(int, QPixmap)
+    
+    def __init__(self, row, url):
+        super().__init__()
+        self.row = row
+        self.url = url
+    
+    def run(self):
+        try:
+            response = requests.get(self.url, timeout=3)
+            if response.status_code == 200:
+                pixmap = QPixmap()
+                pixmap.loadFromData(response.content)
+                self.finished.emit(self.row, pixmap)
+        except:
+            pass
+
 class GoodsWidget(QWidget):
     """商品列表界面"""
     
@@ -21,6 +64,8 @@ class GoodsWidget(QWidget):
         self.storage = get_storage()
         self.goods_service = GoodsService()
         self.current_goods = []
+        self.load_thread = None
+        self.image_threads = []
         self.init_ui()
     
     def init_ui(self):
@@ -113,23 +158,27 @@ class GoodsWidget(QWidget):
         if not game_key:
             return
         
-        # 获取 Cookie
+        if self.load_thread and self.load_thread.isRunning():
+            return
+        
         cookies = self.storage.get_cookies()
         cookie_str = AuthService.cookies_to_string(cookies)
         
-        # 获取米游币
-        points = self.goods_service.get_user_points(cookie_str)
-        if points is not None:
-            self.points_label.setText(f"米游币: {points}")
-        
-        # 获取商品列表
-        goods = self.goods_service.get_goods_list(game_key, cookie_str)
-        if goods:
-            self.current_goods = goods
-            self.display_goods(goods)
-            logger.info(f"加载了 {len(goods)} 个商品")
-        else:
-            QMessageBox.warning(self, "提示", "获取商品列表失败")
+        self.load_thread = LoadGoodsThread(self.goods_service, game_key, cookie_str)
+        self.load_thread.finished.connect(self.on_goods_loaded)
+        self.load_thread.error.connect(self.on_load_error)
+        self.load_thread.start()
+    
+    def on_goods_loaded(self, goods, points):
+        """商品加载完成"""
+        self.points_label.setText(f"米游币: {points}")
+        self.current_goods = goods
+        self.display_goods(goods)
+        logger.info(f"加载了 {len(goods)} 个商品")
+    
+    def on_load_error(self, error_msg):
+        """加载失败"""
+        QMessageBox.warning(self, "提示", error_msg)
     
     def display_goods(self, goods: list):
         """显示商品列表"""
@@ -141,28 +190,19 @@ class GoodsWidget(QWidget):
             icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             icon_label.setFixedSize(70, 70)
             icon_label.setStyleSheet("border: 1px solid #dee2e6; border-radius: 35px;")
+            icon_label.setText("加载中...")
+            
+            self.goods_table.setCellWidget(row, 0, icon_label)
             
             # 异步加载图片
             icon_url = item.get('icon', '')
             if icon_url:
-                try:
-                    response = requests.get(icon_url, timeout=3)
-                    if response.status_code == 200:
-                        pixmap = QPixmap()
-                        pixmap.loadFromData(response.content)
-                        scaled_pixmap = pixmap.scaled(
-                            70, 70,
-                            Qt.AspectRatioMode.KeepAspectRatio,
-                            Qt.TransformationMode.SmoothTransformation
-                        )
-                        icon_label.setPixmap(scaled_pixmap)
-                except Exception as e:
-                    logger.error(f"加载图片失败: {e}")
-                    icon_label.setText("无图")
+                thread = LoadImageThread(row, icon_url)
+                thread.finished.connect(self.on_image_loaded)
+                thread.start()
+                self.image_threads.append(thread)
             else:
                 icon_label.setText("无图")
-            
-            self.goods_table.setCellWidget(row, 0, icon_label)
             
             # 商品名称
             name_item = QTableWidgetItem(item.get('name', ''))
@@ -204,6 +244,17 @@ class GoodsWidget(QWidget):
             
             # 图标URL（隐藏）
             self.goods_table.setItem(row, 6, QTableWidgetItem(item.get('icon', '')))
+    
+    def on_image_loaded(self, row, pixmap):
+        """图片加载完成"""
+        icon_label = self.goods_table.cellWidget(row, 0)
+        if icon_label:
+            scaled_pixmap = pixmap.scaled(
+                70, 70,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            icon_label.setPixmap(scaled_pixmap)
     
     def add_to_wishlist(self, row: int):
         """添加到心愿单"""
