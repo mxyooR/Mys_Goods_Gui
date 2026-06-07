@@ -5,7 +5,8 @@ import subprocess
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                              QLabel, QTableWidget, QTableWidgetItem, QHeaderView,
                              QDialog, QFormLayout, QLineEdit, QComboBox,
-                             QSpinBox, QDateTimeEdit, QMessageBox, QTextEdit)
+                             QSpinBox, QDateTimeEdit, QMessageBox, QTextEdit,
+                             QAbstractItemView)
 from PyQt6.QtCore import Qt, QDateTime
 from core.goods import GoodsService
 from core.exchange import ExchangeTask, ExchangeWorker
@@ -72,11 +73,12 @@ class CreateTaskDialog(QDialog):
         button_layout.setSpacing(10)
         
         create_btn = QPushButton("创建")
+        create_btn.setObjectName("successButton")
         create_btn.clicked.connect(self.create_task)
         button_layout.addWidget(create_btn)
         
         cancel_btn = QPushButton("取消")
-        cancel_btn.setStyleSheet("background-color: #6c757d;")
+        cancel_btn.setObjectName("secondaryButton")
         cancel_btn.clicked.connect(self.reject)
         button_layout.addWidget(cancel_btn)
         
@@ -175,23 +177,30 @@ class TaskWidget(QWidget):
     def init_ui(self):
         """初始化 UI"""
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 12)
+        layout.setSpacing(12)
         
         # 顶部按钮
         top_layout = QHBoxLayout()
+        top_layout.setSpacing(10)
         
         create_btn = QPushButton("创建任务")
+        create_btn.setObjectName("successButton")
         create_btn.clicked.connect(self.create_task)
         top_layout.addWidget(create_btn)
         
         refresh_btn = QPushButton("刷新")
+        refresh_btn.setObjectName("secondaryButton")
         refresh_btn.clicked.connect(self.load_tasks)
         top_layout.addWidget(refresh_btn)
         
         clear_btn = QPushButton("清空任务列表")
+        clear_btn.setObjectName("dangerButton")
         clear_btn.clicked.connect(self.clear_tasks)
         top_layout.addWidget(clear_btn)
         
         open_file_btn = QPushButton("打开任务文件")
+        open_file_btn.setObjectName("secondaryButton")
         open_file_btn.clicked.connect(self.open_task_file)
         top_layout.addWidget(open_file_btn)
         
@@ -201,6 +210,8 @@ class TaskWidget(QWidget):
         
         # 任务表格
         self.task_table = QTableWidget()
+        self.task_table.setAlternatingRowColors(True)
+        self.task_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.task_table.setColumnCount(5)
         self.task_table.setHorizontalHeaderLabels([
             "任务名称", "兑换时间", "请求次数", "状态", "操作"
@@ -228,6 +239,7 @@ class TaskWidget(QWidget):
         layout.addWidget(log_label)
         
         self.log_text = QTextEdit()
+        self.log_text.setObjectName("logView")
         self.log_text.setReadOnly(True)
         self.log_text.setMaximumHeight(150)
         layout.addWidget(self.log_text)
@@ -266,19 +278,7 @@ class TaskWidget(QWidget):
             # 操作按钮 - 直接放在单元格中
             if task['name'] in self.running_tasks:
                 stop_btn = QPushButton("停止")
-                stop_btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #007bff;
-                        color: #ffffff;
-                        border: none;
-                        padding: 6px 12px;
-                        border-radius: 4px;
-                        font-size: 13px;
-                    }
-                    QPushButton:hover {
-                        background-color: #0069d9;
-                    }
-                """)
+                stop_btn.setObjectName("secondaryButton")
                 stop_btn.clicked.connect(lambda checked, t=task: self.stop_task(t))
                 self.task_table.setCellWidget(row, 4, stop_btn)
             else:
@@ -289,36 +289,12 @@ class TaskWidget(QWidget):
                 button_layout.setSpacing(5)
                 
                 start_btn = QPushButton("启动")
-                start_btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #007bff;
-                        color: #ffffff;
-                        border: none;
-                        padding: 6px 12px;
-                        border-radius: 4px;
-                        font-size: 13px;
-                    }
-                    QPushButton:hover {
-                        background-color: #0069d9;
-                    }
-                """)
+                start_btn.setObjectName("successButton")
                 start_btn.clicked.connect(lambda checked, t=task: self.start_task(t))
                 button_layout.addWidget(start_btn)
                 
                 delete_btn = QPushButton("删除")
-                delete_btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #dc3545;
-                        color: #ffffff;
-                        border: none;
-                        padding: 6px 12px;
-                        border-radius: 4px;
-                        font-size: 13px;
-                    }
-                    QPushButton:hover {
-                        background-color: #c82333;
-                    }
-                """)
+                delete_btn.setObjectName("dangerButton")
                 delete_btn.clicked.connect(lambda checked, t=task: self.delete_task(t))
                 button_layout.addWidget(delete_btn)
                 

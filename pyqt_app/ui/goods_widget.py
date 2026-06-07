@@ -3,7 +3,7 @@ import requests
 from io import BytesIO
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                              QLabel, QComboBox, QTableWidget, QTableWidgetItem,
-                             QHeaderView, QMessageBox)
+                             QHeaderView, QMessageBox, QAbstractItemView)
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap
 from core.goods import GoodsService
@@ -71,9 +71,12 @@ class GoodsWidget(QWidget):
     def init_ui(self):
         """初始化 UI"""
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 12)
+        layout.setSpacing(12)
         
         # 顶部控制栏
         top_layout = QHBoxLayout()
+        top_layout.setSpacing(10)
         
         # 游戏选择
         top_layout.addWidget(QLabel("选择游戏:"))
@@ -83,6 +86,7 @@ class GoodsWidget(QWidget):
         
         # 刷新按钮
         refresh_btn = QPushButton("刷新")
+        refresh_btn.setObjectName("secondaryButton")
         refresh_btn.clicked.connect(self.load_goods)
         top_layout.addWidget(refresh_btn)
         
@@ -90,13 +94,15 @@ class GoodsWidget(QWidget):
         
         # 米游币显示
         self.points_label = QLabel("米游币: --")
-        self.points_label.setStyleSheet("font-weight: bold; padding: 5px; font-size: 16px; color: #007bff;")
+        self.points_label.setObjectName("pointsLabel")
         top_layout.addWidget(self.points_label)
         
         layout.addLayout(top_layout)
         
         # 商品表格
         self.goods_table = QTableWidget()
+        self.goods_table.setAlternatingRowColors(True)
+        self.goods_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.goods_table.setColumnCount(7)
         self.goods_table.setHorizontalHeaderLabels([
             "图标", "商品名称", "价格", "兑换时间", "操作", "ID", "图标URL"
@@ -128,7 +134,7 @@ class GoodsWidget(QWidget):
         bottom_layout = QHBoxLayout()
         
         clear_wishlist_btn = QPushButton("清空心愿单")
-        clear_wishlist_btn.setStyleSheet("background-color: #dc3545;")
+        clear_wishlist_btn.setObjectName("dangerButton")
         clear_wishlist_btn.clicked.connect(self.clear_wishlist)
         bottom_layout.addWidget(clear_wishlist_btn)
         
@@ -189,7 +195,7 @@ class GoodsWidget(QWidget):
             icon_label = QLabel()
             icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             icon_label.setFixedSize(70, 70)
-            icon_label.setStyleSheet("border: 1px solid #dee2e6; border-radius: 35px;")
+            icon_label.setObjectName("imagePlaceholder")
             icon_label.setText("加载中...")
             
             self.goods_table.setCellWidget(row, 0, icon_label)
@@ -223,19 +229,6 @@ class GoodsWidget(QWidget):
             
             # 操作按钮
             add_btn = QPushButton("加入心愿单")
-            add_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #007bff;
-                    color: #ffffff;
-                    border: none;
-                    padding: 6px 12px;
-                    border-radius: 4px;
-                    font-size: 13px;
-                }
-                QPushButton:hover {
-                    background-color: #0069d9;
-                }
-            """)
             add_btn.clicked.connect(lambda checked, r=row: self.add_to_wishlist(r))
             self.goods_table.setCellWidget(row, 4, add_btn)
             

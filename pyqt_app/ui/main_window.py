@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
     def init_ui(self):
         """初始化 UI"""
         self.setWindowTitle("米游社商品兑换助手")
-        self.setMinimumSize(900, 600)
+        self.setMinimumSize(1040, 680)
         
         # 设置窗口图标
         icon_path = APP_DIR / 'tray_icon.ico'
@@ -53,6 +53,7 @@ class MainWindow(QMainWindow):
         
         # 顶部状态栏
         self.status_label = QLabel("未登录")
+        self.status_label.setObjectName("statusBanner")
         self.status_label.setStyleSheet(get_status_style("error"))
         layout.addWidget(self.status_label)
         
@@ -76,24 +77,30 @@ class MainWindow(QMainWindow):
         
         # 底部按钮栏
         bottom_widget = QWidget()
-        bottom_widget.setStyleSheet("background-color: #f8f9fa; padding: 10px;")
+        bottom_widget.setObjectName("bottomBar")
         bottom_layout = QHBoxLayout(bottom_widget)
+        bottom_layout.setContentsMargins(14, 10, 14, 10)
+        bottom_layout.setSpacing(10)
         
         self.refresh_btn = QPushButton("刷新状态")
+        self.refresh_btn.setObjectName("secondaryButton")
         self.refresh_btn.clicked.connect(self.check_login_status)
         bottom_layout.addWidget(self.refresh_btn)
         
         self.view_log_btn = QPushButton("查看日志")
+        self.view_log_btn.setObjectName("secondaryButton")
         self.view_log_btn.clicked.connect(self.view_log)
         bottom_layout.addWidget(self.view_log_btn)
         
         self.open_data_btn = QPushButton("打开数据目录")
+        self.open_data_btn.setObjectName("secondaryButton")
         self.open_data_btn.clicked.connect(self.open_data_folder)
         bottom_layout.addWidget(self.open_data_btn)
         
         bottom_layout.addStretch()
         
         self.about_btn = QPushButton("关于")
+        self.about_btn.setObjectName("secondaryButton")
         self.about_btn.clicked.connect(self.show_about)
         bottom_layout.addWidget(self.about_btn)
         
