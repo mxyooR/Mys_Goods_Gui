@@ -6,6 +6,10 @@ from utils.logger import get_logger
 
 logger = get_logger()
 
+BBS_API_BASE = "https://bbs-api.miyoushe.com"
+TAKUMI_API_BASE = "https://api-takumi.miyoushe.com"
+APP_VERSION = "2.108.0"
+
 class GoodsService:
     """商品服务"""
     
@@ -14,7 +18,7 @@ class GoodsService:
     
     def get_game_list(self) -> Optional[List[Dict]]:
         """获取游戏分区列表"""
-        url = "https://api-takumi.mihoyogift.com/mall/v1/web/goods/list"
+        url = f"{BBS_API_BASE}/common/homushop/v1/web/goods/list"
         params = {
             "app_id": 1,
             "point_sn": "myb",
@@ -36,7 +40,7 @@ class GoodsService:
     
     def get_goods_list(self, game_type: str, cookie: str = '') -> Optional[List[Dict]]:
         """获取商品列表"""
-        url = "https://api-takumi.mihoyogift.com/mall/v1/web/goods/list"
+        url = f"{BBS_API_BASE}/common/homushop/v1/web/goods/list"
         headers = {"Cookie": cookie} if cookie else {}
         
         goods_list = []
@@ -77,6 +81,8 @@ class GoodsService:
             "time": self._timestamp_to_date(goods.get("next_time")),
             "icon": goods.get("icon"),
             "type": goods.get("type"),
+            "game": goods.get("game"),
+            "biz": goods.get("game_biz") or goods.get("game"),
         }
     
     def _timestamp_to_date(self, timestamp, format='%Y-%m-%d %H:%M:%S') -> Optional[str]:
@@ -91,7 +97,7 @@ class GoodsService:
     
     def get_user_points(self, cookie: str) -> Optional[int]:
         """获取用户米游币数量"""
-        url = "https://api-takumi.miyoushe.com/common/homutreasure/v1/web/user/point"
+        url = f"{BBS_API_BASE}/common/homutreasure/v1/web/user/point"
         params = {"app_id": 1, "point_sn": "myb"}
         headers = {"Cookie": cookie}
         
@@ -106,16 +112,17 @@ class GoodsService:
     
     def get_address_list(self, cookie: str) -> Optional[List[Dict]]:
         """获取收货地址列表"""
-        url = "https://api-takumi.mihoyogift.com/account/address/list"
+        url = f"{TAKUMI_API_BASE}/account/address/list"
+        params = {"point_sn": "myb"}
         headers = {
-            "Host": "api-takumi.mihoyogift.com",
+            "Host": "api-takumi.miyoushe.com",
             "Accept": "*/*",
             "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.72.1",
+            "User-Agent": f"Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/{APP_VERSION}",
             "Cookie": cookie,
         }
         
-        response = self.http_client.get(url, headers=headers)
+        response = self.http_client.get(url, headers=headers, params=params)
         if not response or response.get('retcode') != 0:
             logger.error("获取地址列表失败")
             return []

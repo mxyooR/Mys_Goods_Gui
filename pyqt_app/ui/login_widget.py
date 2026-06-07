@@ -172,12 +172,12 @@ class LoginWidget(QWidget):
                 self,
                 "登录失败",
                 "Cookie 格式不正确或缺少必要字段\n\n"
-                "请确保包含以下字段：\n"
-                "- ltoken\n"
-                "- ltuid\n"
-                "- account_id\n"
-                "- cookie_token\n"
-                "- account_mid_v2"
+                "请确保包含新版 v2 字段，或可转换的旧版字段：\n"
+                "- account_id_v2 / account_id\n"
+                "- account_mid_v2\n"
+                "- cookie_token_v2 / cookie_token\n"
+                "- ltoken_v2 / ltoken\n"
+                "- ltuid_v2 / ltuid"
             )
     
     def on_login_success(self, cookies: dict, device_id: str):

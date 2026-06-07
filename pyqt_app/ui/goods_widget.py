@@ -268,7 +268,7 @@ class GoodsWidget(QWidget):
             'name': goods['name'],
             'id': goods['id'],
             'time': goods['time'],
-            'biz': game_key
+            'biz': goods.get('biz') or game_key
         }
         
         self.storage.add_to_wishlist(wishlist_item)

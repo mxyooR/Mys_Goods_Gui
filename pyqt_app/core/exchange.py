@@ -11,6 +11,8 @@ from utils.helpers import generate_random_fp
 
 logger = get_logger()
 
+EXCHANGE_URL = "https://bbs-api.miyoushe.com/common/homushop/v1/web/goods/exchange"
+
 class ExchangeTask(QObject):
     """兑换任务"""
     
@@ -53,12 +55,10 @@ class ExchangeTask(QObject):
     
     async def exchange_goods(self):
         """执行兑换"""
-        url = "https://api-takumi.miyoushe.com/mall/v1/web/goods/exchange"
-        
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    url,
+                    EXCHANGE_URL,
                     data=json.dumps(self.payload),
                     headers=self.headers,
                     timeout=10
